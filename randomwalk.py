@@ -35,15 +35,20 @@ def export_gro_file(position_A, positions, output_filename, box_size, time,
         box_size (numpy.ndarray): Array containing the size of the simulation box in shape (3,).
     """
     num_particles = positions.shape[0]
+    # paso a nm
+    position_A = position_A/10
+    positions = positions/10
+    box_size = box_size/10
     with open(output_filename, 'w') as gro_file:
+        #"    1WATER  OW1    1   0.126   1.624   1.679  0.1227"
         gro_file.write(f"random walk, t={time} step={0.000}\n")
         gro_file.write(f"{num_particles}\n")
-        gro_file.write(f"    1A   A   1   ")
-        gro_file.write(" ".join(f"{coord:8.3f}" for coord in position_A[0]))
+        gro_file.write(f"   1AAAAA   AA1   1")
+        gro_file.write("".join(f"{coord:8.3f}" for coord in position_A[0]))
         gro_file.write(f"   {charge_A}\n")
 
         for i in range(num_particles):
-            gro_file.write(f"    {(i+2)%4}p{i+1}   p   {i+2}   ")
+            gro_file.write(f"   2ppppp   pp1   {i+2}")
             gro_file.write(" ".join("{:8.3f}".format(coord)
                            for coord in positions[i]))
             gro_file.write(f"   {charge_p}\n")
