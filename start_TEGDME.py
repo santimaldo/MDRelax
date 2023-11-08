@@ -89,7 +89,8 @@ def calculate_EFG(q, r, x, y, z):
     return EFG
 #%%
 # Primero leo el tiempo 0 para establecer algunos valores generales del universo
-filename = f"../TEGDME/0fs.gro"
+path = "../TEGDME/"
+filename = f"{path}0fs.gro"
 u = mda.Universe(filename)
 box=u.dimensions
 center = box[0:3]/2
@@ -98,7 +99,8 @@ Charges = get_Charges(filename)
 
 
 
-times = np.arange(11)*10
+# times = np.arange(11)*10
+times = np.arange(501)*10
 t = np.zeros(times.size)
 
 EFG = []
@@ -108,9 +110,9 @@ Si_positions = []
 for ii in range(times.size):        
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")    
     # Load the GROMACS .gro file
-    filename = f"../TEGDME/{times[ii]}fs.gro"
+    filename = f"{path}{times[ii]}fs.gro"
     t[ii] = get_Time(filename)
-    print(f"       time = {t[ii]} ps\n\n")
+    print(f"       time = {t[ii]/1000} ps\n\n")
     print(filename)
     u = mda.Universe(filename)
     box=u.dimensions
@@ -176,8 +178,7 @@ for ii in range(times.size):
 # cada columna de EFG corresponde al litio de group_Li (EN ESE ORDEN)    
 EFG = np.array(EFG)
     
-#%%
-
+#%% Calculo el profucto de EFG a tiempo t y a tiempo 0
 t = t - t[0]
 
 ACF = np.zeros([t.size, group_Li.n_atoms])
@@ -186,34 +187,63 @@ for ii in range(group_Li.n_atoms):
     ACF[:,ii] = np.sum(efg_nLi*efg_nLi[0,:,:], axis=(1,2))
     
     plt.figure(0)
-    plt.plot(t, ACF[:,ii],'o-', label = rf'$Li_{ii+1}$')
-plt.plot(t, np.mean(ACF),'o-', label = r'$mean$')
+    plt.plot(t, ACF[:,ii]/ACF[0,ii],'o-', label = rf'$Li_{ii+1}$')
+plt.plot(t, np.mean(ACF, axis=1)/np.mean(ACF, axis=1)[0],'o-', label = r'mean')
 plt.xlabel("Time [ps]", fontdict={'fontsize':16})
 plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
 plt.legend()
-plt.savefig("ACF.png")
+
+
 plt.show()
 
 #---------------
-#%%
+#%% Calculo el profucto de EFG a tiempo t y a tiempo 0,
+### esta vez variando cual es el tiempo 0 (promedio en ensamble)
 
-efg = np.sum(EFG, axis=1)
+efg = EFG
 
-acf = np.zeros_like(efg)
-for ii in range(efg.size):    
+acf = np.zeros([t.size, group_Li.n_atoms])
+for ii in range(t.size):    
     tau = ii*10
     jj, t0, acf_ii = 0, 0, 0
-    while t0+tau<=100:
-        print(f"tau = {tau} fs, t0 = {t0} ps")
-        acf_ii += efg[ii]*efg[jj]
+    while t0+tau<=5000:
+        print(f"tau = {tau} fs, t0 = {t0} ps, ---------{jj}")                
+        acf_ii += np.sum(efg[ii,:,:,:]*efg[jj,:,:,:], axis=(1,2))
         jj+=1
         t0 = jj*10
-    print(f"el promedio es dividir por j")
-    acf[ii] = acf_ii/jj
+    print(f"el promedio es dividir por {jj}")
+    acf[ii,:] = acf_ii/jj
 
-#%%    
-    
-plt.plot(t, acf/acf[0], 'o-')        
-plt.plot(t, efg/efg[0], 'o-')     # esto es (efg*efg[0])/(efg[0]*efg[0]   )
+#%%
+plt.figure(44848)
+for jj in range(group_Li.n_atoms):        
+    # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
+             # label=f'Li {jj+1}, Sin promediar')   
+    plt.plot(t, acf[:,jj], 'o-', 
+             label=rf'$Li_{jj+1}$')
+        
+plt.plot(t, np.mean(acf, axis=1),'o-', 
+         label = r'mean')
+plt.xlabel("Time [ps]", fontdict={'fontsize':16})
 
+plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
+           fontdict={'fontsize':16})
+plt.gca().axhline(0, color='k', ls='--')
+# plt.gca().axhline(1, color='k', ls='--')
+plt.tight_layout()
+plt.legend(loc='center right')
+plt.savefig(f"{path}ACF.png")
+plt.show()
+
+#%%
+plt.figure(44849)
+plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
+         label = r'Promedio entre atomos de Li y en $<>_t$')
+plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
+plt.gca().axhline(0, color='k', ls='--')
+plt.gca().axhline(1, color='k', ls='--')
+plt.tight_layout()
+plt.legend()
+plt.savefig(f"{path}ACFnorm.png")
 plt.show()

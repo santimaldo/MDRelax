@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Nov  8 15:29:12 2023
+
+@author: santi
+"""
+#%%
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to apply periodic boundary conditions
+def apply_periodic_Aoundary(position, box_size):
+    return position % box_size
+
+
+def random_walk_step(positions, box_size, step_length):        
+    # Perform random walk for num_steps
+    num_particles = positions.shape[0]
+    random_steps = np.random.uniform(-step_length, step_length, size=(num_particles, 3))
+    newpositions = np.mod(positions + random_steps[:num_particles - 1], box_size)
+        
+    return newpositions
+
+# Inputs
+box_size = np.array([20,20,20])
+step_length = 0.1
+num_steps = 100
+num_particles = 100
+
+
+initial_positions = np.random.rand(num_particles - 1, 3) * box_size
+initial_position_A = box_size/2
+
+# Simulate random walks
+# particles = random_walk_3d(num_particles=101, box_size=box_size, step_length=step_length, num_steps=num_steps)
+
+# Extract particle B trajectory for plotting
+trajectory_A = np.zeros([num_steps,3])
+
+position_A = initial_position_A
+for nn in range(num_steps):
+    trajectory_A[nn] = position_A
+    position_A = random_walk_step(position_A, box_size,step_length)
+    
+# Plot the trajectory of particle B
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.set_title('Trajectory of Particle B')
+ax.plot(trajectory_A[:, 0], trajectory_A[:, 1], trajectory_A[:, 2], marker='o', linestyle='-', color='b')
+plt.show()
