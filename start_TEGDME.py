@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import pandas as pd
 
-
+#%%
 def get_Charges(filename):
     """    
     Parameters

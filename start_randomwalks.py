@@ -95,7 +95,7 @@ def calculate_EFG(q, r, x, y, z):
     return EFG
 #%%
 # Primero leo el tiempo 0 para establecer algunos valores generales del universo
-path = "../testsfiles/"
+path = "../testsfiles/randomwalk/"
 filename = f"{path}randomwalk_0fs.gro"
 u = mda.Universe(filename)
 box=u.dimensions
@@ -116,7 +116,7 @@ Li_positions = []
 for ii in range(times.size):        
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")    
     # Load the GROMACS .gro file
-    filename = f"{path}randomwalk{times[ii]}fs.gro"
+    filename = f"{path}randomwalk_{times[ii]:.0f}fs.gro"
     t[ii] = get_Time(filename)
     print(f"       time = {t[ii]/1000} ps\n\n")
     print(filename)
@@ -133,7 +133,10 @@ for ii in range(times.size):
         nLi += 1
         Li_pos_t.append(Li_atom.position)
         EFG_t_nLi = 0
-        for AtomType in Charges['AtomType']:                        
+        for AtomType in Charges['AtomType']:     
+            for AtomType in Charges['AtomType']:        
+                if 'A' in AtomType.lower():
+                    continue # NO CALCULO ENTRE LITIOS
             q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
             
             group = u.select_atoms(f"name {AtomType}")
@@ -160,7 +163,9 @@ for ii in range(times.size):
             # Calculate EFG--------------------------------------------------------
             EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
                                     y_distances, z_distances)
-                  
+            if np.isnan(EFG_t_AtomType).any():
+                print(f"    NAN!!!!! {filename}")
+                STOP
             # EFG_t = [EFG_t[kk]+EFG_t_AtomType[kk] for kk in range(6)]
             EFG_t_nLi += EFG_t_AtomType
         EFG_t.append(EFG_t_nLi)
@@ -194,13 +199,15 @@ plt.show()
 #%% Calculo el profucto de EFG a tiempo t y a tiempo 0,
 ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
 
+
 efg = EFG
+tmax = t[-1]*1000 # paso a fs
 
 acf = np.zeros([t.size, group_Li.n_atoms])
 for ii in range(t.size):    
     tau = ii*10
     jj, t0, acf_ii = 0, 0, 0
-    while t0+tau<=5000:
+    while t0+tau<=tmax:
         print(f"tau = {tau} fs, t0 = {t0} ps, ---------{jj}")                
         acf_ii += np.sum(efg[ii,:,:,:]*efg[jj,:,:,:], axis=(1,2))
         jj+=1
