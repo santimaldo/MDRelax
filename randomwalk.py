@@ -70,11 +70,11 @@ path = "../testsfiles/randomwalk/"
 
 # Inputs
 box_size = np.array([20, 20, 20])
-step_length = 0.05
+step_length = 0.5
 num_steps = 1000
 num_p_particles = 100
-num_A_particles = 1
-dt = 0.1  # ps
+num_A_particles = 10
+dt = 0.01  # ps
 
 initial_positions = np.random.rand(num_p_particles, 3) * box_size
 # initial_positions_A = np.random.rand(num_A_particles, 3) * box_size
@@ -83,12 +83,14 @@ initial_positions_A = np.ones([num_A_particles, 3]) * box_size/2
 # Simulate random walks
 # particles = random_walk_3d(num_particles=101, box_size=box_size, step_length=step_length, num_steps=num_steps)
 trajectories_A = np.zeros([num_A_particles, num_steps, 3])
+trajectories = np.zeros([num_p_particles, num_steps, 3])
 positions_A = initial_positions_A
 positions = initial_positions
 for nn in range(num_steps):
     print(f"Step: {nn}")
     time = dt*nn
     trajectories_A[:, nn, :] = positions_A
+    trajectories[:, nn, :] = positions
     positions_A = random_walk_step(positions_A, box_size, step_length)
     positions = random_walk_step(positions, box_size, step_length)
 
@@ -97,13 +99,42 @@ for nn in range(num_steps):
 
 
 # Plot the trajectory of particle B
-fig = plt.figure()
+fig = plt.figure(1)
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
-ax.set_title('Trajectory of Particle B')
+ax.set_title('Trajectory of Particles A')
 for jj in range(num_A_particles):
     ax.plot(trajectories_A[jj, :, 0], trajectories_A[jj, :, 1],
             trajectories_A[jj, :, 2], marker='o', linestyle='')
+    
+    
+    
+fig = plt.figure(2)
+ax = fig.add_subplot(111, projection='3d')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.set_title('Trajectory of Particles p')
+for jj in range(num_p_particles):
+    ax.plot(trajectories[jj, :, 0], trajectories[jj, :, 1],
+            trajectories[jj, :, 2], marker='o', linestyle='')
+
+
+
+fig = plt.figure(3)
+ax = fig.add_subplot(111, projection='3d')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.set_title('Trajectories: A (blue), p (red)')
+for jj in range(num_p_particles):
+    ax.plot(trajectories[jj, :, 0], trajectories[jj, :, 1],
+            trajectories[jj, :, 2], marker='o', linestyle='', color='r')
+    
+for jj in range(num_A_particles):
+    ax.plot(trajectories_A[jj, :, 0], trajectories_A[jj, :, 1],
+            trajectories_A[jj, :, 2], marker='o', linestyle='', color='b')
+    
 plt.show()

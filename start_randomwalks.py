@@ -106,7 +106,7 @@ Charges = get_Charges(filename)
 
 
 # times = np.arange(11)*10
-num_steps = 100
+num_steps = 1000
 dt = 0.01  # ps
 times = np.arange(num_steps)*dt*1000 # fs
 t = np.zeros(times.size)
