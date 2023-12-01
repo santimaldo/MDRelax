@@ -89,8 +89,14 @@ def calculate_EFG(q, r, x, y, z):
     return EFG
 #%%
 # Primero leo el tiempo 0 para establecer algunos valores generales del universo
-path = "../TEGDME/"
-filename = f"{path}0fs.gro"
+
+
+
+
+# path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
+path = "../DATA/2023-12_DME/500ps/frames_HQ_1/"
+filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
+filename = f"{path}0{filename_format}"
 u = mda.Universe(filename)
 box=u.dimensions
 center = box[0:3]/2
@@ -100,7 +106,7 @@ Charges = get_Charges(filename)
 
 
 # times = np.arange(11)*10
-times = np.arange(501)*10
+times = np.arange(3001)*10
 t = np.zeros(times.size)
 
 EFG = []
@@ -110,7 +116,7 @@ Si_positions = []
 for ii in range(times.size):        
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")    
     # Load the GROMACS .gro file
-    filename = f"{path}{times[ii]}fs.gro"
+    filename = f"{path}{times[ii]}{filename_format}"
     t[ii] = get_Time(filename)
     print(f"       time = {t[ii]/1000} ps\n\n")
     print(filename)
@@ -130,8 +136,6 @@ for ii in range(times.size):
         Li_pos_t.append(Li_atom.position)
         EFG_t_nLi = 0
         for AtomType in Charges['AtomType']:        
-            if 'li' in AtomType.lower():
-                continue # NO CALCULO ENTRE LITIOS
             
                 
             q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
@@ -153,13 +157,19 @@ for ii in range(times.size):
             group_Cl_newpositions = mda.lib.distances.apply_PBC(group_newpositions,
                                                                 box=box,
                                                                 backend='openMP')
+                        
             
             r_distances = mda.lib.distances.distance_array(center, 
                                                            group_newpositions)
     
             x_distances, y_distances, z_distances = (group_newpositions-center).T
     
-    
+            if 'li' in AtomType.lower():
+                 # Quito la distancia cero, i.e, entre la "autodistancia"
+                 x_distances = x_distances[x_distances!=0]
+                 y_distances = y_distances[y_distances!=0]
+                 z_distances = z_distances[z_distances!=0]
+                 r_distances = r_distances[r_distances!=0]
     
             # Calculate EFG--------------------------------------------------------
             EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
@@ -191,6 +201,7 @@ for ii in range(group_Li.n_atoms):
 plt.plot(t, np.mean(ACF, axis=1)/np.mean(ACF, axis=1)[0],'o-', label = r'mean')
 plt.xlabel("Time [ps]", fontdict={'fontsize':16})
 plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
+plt.gca().axhline(0, color='k', ls='--')
 plt.legend()
 
 
@@ -201,20 +212,27 @@ plt.show()
 ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
 
 efg = EFG
-
 acf = np.zeros([t.size, group_Li.n_atoms])
+Num_promedios = np.zeros(t.size)
 for ii in range(t.size):    
     tau = ii*10
     jj, t0, acf_ii = 0, 0, 0
-    while t0+tau<=5000:
+    while t0+tau<=times[-1]:
         print(f"tau = {tau} fs, t0 = {t0} ps, ---------{jj}")                
-        acf_ii += np.sum(efg[ii,:,:,:]*efg[jj,:,:,:], axis=(1,2))
+        acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
         jj+=1
         t0 = jj*10
     print(f"el promedio es dividir por {jj}")
     acf[ii,:] = acf_ii/jj
-
+    Num_promedios[ii] = jj
 #%%
+plt.figure(44847)
+plt.plot(t, Num_promedios,'k--')
+plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+
+plt.ylabel(r"Numero de promedios",
+           fontdict={'fontsize':16})
+
 plt.figure(44848)
 for jj in range(group_Li.n_atoms):        
     # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
@@ -224,10 +242,13 @@ for jj in range(group_Li.n_atoms):
         
 plt.plot(t, np.mean(acf, axis=1),'o-', 
          label = r'mean')
+
 plt.xlabel("Time [ps]", fontdict={'fontsize':16})
 
 plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
            fontdict={'fontsize':16})
+
+# plt.xlim([0,3])
 plt.gca().axhline(0, color='k', ls='--')
 # plt.gca().axhline(1, color='k', ls='--')
 plt.tight_layout()

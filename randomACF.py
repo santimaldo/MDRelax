@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 
 
-num_steps = 50000
+num_steps = 1000
 dt = 10  # fs
 times = np.arange(num_steps)*dt
 
@@ -22,8 +22,10 @@ dt_slow = 500
 times_slow =  np.arange(0,times[-1]+dt_slow, dt_slow)
 Rand_slow = 2 * np.random.rand(times_slow.size) - 1
 
-#Rand_interpolate = interpolate.CubicSpline(times_slow, Rand_slow)
+# Rand_interpolate = interpolate.CubicSpline(times_slow, Rand_slow)
 Rand_interpolate = interpolate.interp1d(times_slow, Rand_slow)
+# Rand_interpolate = interpolate.interp1d(times_slow, Rand_slow, kind="nearest") #Steps
+
 
 Rand_spline= Rand_interpolate(times)
 Rand = Rand_spline + (2*np.random.rand(times.size)-1) * 0.1
@@ -44,6 +46,13 @@ plt.figure(1)
 plt.plot(times, Rand_spline, 'b-', markersize=5 )
 plt.plot(times, Rand, 'bo')
 plt.plot(times_slow, Rand_slow, 'rx', markersize=10)
+plt.xlabel("Tiempo [fs]")
+plt.ylabel("funcion B [a.u]")
+plt.xlim([0,1500])
+plt.axhline(0, color='k', linestyle='--')
+plt.axhline(-1, color='k', linestyle='--')
+plt.axhline(1, color='k', linestyle='--')
+plt.title(f"Intervalos de recta: {dt_slow} fs")
 
 
 #%%
@@ -76,6 +85,6 @@ plt.plot(tau, acf/acf[0], 'o-')
 plt.plot(tau, 1.25*np.exp(-tau/tau_c), 'k--')
 plt.xlim([0,tau[-1]/2])
 plt.show()
-
+#%%
 datos = np.array([tau[:500], acf[:500]]).T
 np.savetxt(f"RandomACF_dtCorr{dt_slow}_Nsteps{num_steps}.dat", datos)

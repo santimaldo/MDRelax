@@ -4,6 +4,8 @@
 Created on Tue Nov  7 10:20:18 2023
 
 @author: santi
+
+correr solo las celdas, no con F5
 """
 
 
