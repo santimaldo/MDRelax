@@ -91,18 +91,18 @@ def calculate_EFG(q, r, x, y, z):
 # Primero leo el tiempo 0 para establecer algunos valores generales del universo
 
 
-
-
+frame_time = "500ps"
+run = "frames_HQ_1"
 # path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
-path = "../DATA/2023-12_DME/500ps/frames_HQ_1/"
+path = f"../DATA/2023-12_DME/"
 filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
-filename = f"{path}0{filename_format}"
+filename = f"{path}{frame_time}/{run}/0{filename_format}"
 u = mda.Universe(filename)
 box=u.dimensions
 center = box[0:3]/2
 Charges = get_Charges(filename)
 
-
+#%%
 
 
 # times = np.arange(11)*10
@@ -115,8 +115,8 @@ St_positions = []
 Si_positions = []
 for ii in range(times.size):        
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")    
-    # Load the GROMACS .gro file
-    filename = f"{path}{times[ii]}{filename_format}"
+    # Load the GROMACS .gro file    
+    filename = f"{path}{frame_time}/{run}/{times[ii]}{filename_format}"
     t[ii] = get_Time(filename)
     print(f"       time = {t[ii]/1000} ps\n\n")
     print(filename)
@@ -268,3 +268,11 @@ plt.tight_layout()
 plt.legend()
 plt.savefig(f"{path}ACFnorm.png")
 plt.show()
+
+#%%
+### EXPORT DATA
+DATA = np.array([t, ACF[:,0], ACF[:,1], acf[:,0], acf[:,1]]).T
+header =  r"# t [fs]\t sum(EFG(t)*EFG(0)) para Li1 y Li2\t"\
+          r"ACF para Li1 y Li2"
+filename = f"{path}ACF_{frame_time}_{run}.dat"
+np.savetxt(filename, DATA, header=header)

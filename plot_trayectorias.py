@@ -53,36 +53,49 @@ plt.legend()
 # ax.scatter(*li1.T[0], color = 'red')
 plt.show()
 
+filename = f"{path}Trayectorias_{frame_time}_{run}.png"
+fig.savefig(filename)
+
 
 #%% Proyeccion x-y
 
-i=1
-j=2
+# x,y,z = 0,1,2
+# proyeccion ij:
+I= [0, 0, 1]
+J= [1, 2, 2]
 
-fig, ax = plt.subplots(num=2)
-ax.set_aspect('equal')
-ax.plot(li1[:,i], li1[:,j], marker = lim, label = r'$Li_1$')
-ax.plot(li2[:,i], li2[:,j], marker = lim, label = r'$Li_2$')
+fig, axs = plt.subplots(num=2, nrows=1, ncols=3)
 
-ax.plot(st1[:,i], st1[:,j], marker = stm, color='goldenrod', 
-        label = " S terminal")
-ax.plot(st2[:,i], st2[:,j], marker = stm, color='goldenrod')
+for nn in range(3):
+    ax = axs[nn]
+    i, j = I[nn], J[nn]    
+    ax.set_aspect('equal')
+    ax.plot(li1[:,i], li1[:,j], marker = lim, label = r'$Li_1$')
+    ax.plot(li2[:,i], li2[:,j], marker = lim, label = r'$Li_2$')
+    
+    ax.plot(st1[:,i], st1[:,j], marker = stm, color='goldenrod', 
+            label = " S terminal")
+    ax.plot(st2[:,i], st2[:,j], marker = stm, color='goldenrod')
+    
+    for jj in range(4):
+        if jj==0:    
+            ax.plot(sip[:,jj,i], sip[:,jj,j], marker = sim, 
+                    color='gold', label = "S interior")
+        else:
+            ax.plot(sip[:,jj,i], sip[:,jj,j], marker = sim, 
+                    color='gold')
+    
+    ax.set_xlabel("x [Ang]")
+    if j==1:
+        ax.set_ylabel("y [Ang]")
+    if j==2:
+        ax.set_ylabel("z [Ang]")
+        if i==1:
+            ax.set_xlabel("y [Ang]")
 
-for jj in range(4):
-    if jj==0:    
-        ax.plot(sip[:,jj,i], sip[:,jj,j], marker = sim, 
-                color='gold', label = "S interior")
-    else:
-        ax.plot(sip[:,jj,i], sip[:,jj,j], marker = sim, 
-                color='gold')
-
-ax.set_xlabel("x [Ang]")
-if j==1:
-    ax.set_ylabel("y [Ang]")
-if j==2:
-    ax.set_ylabel("z [Ang]")
-    if i==1:
-        ax.set_xlabel("y [Ang]")
-
+# fig.suptitle("Trayectorias: proyecciones")
+fig.tight_layout()
 # plt.legend()
 plt.show()
+filename = f"{path}Trayectorias_{frame_time}_{run}_PROYECCIONES.png"
+fig.savefig(filename)
