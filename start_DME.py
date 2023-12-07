@@ -101,7 +101,7 @@ filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
 for frame_time in frame_times:
   for run in runs:
 
-    filename = f"{path}{frame_time}/{run}/0{filename_format}"
+    filename = f"{path}{frame_time}/{run}/0{filename_format}"    
     u = mda.Universe(filename)
     box=u.dimensions
     center = box[0:3]/2
@@ -121,7 +121,7 @@ for frame_time in frame_times:
         # Load the GROMACS .gro file    
         filename = f"{path}{frame_time}/{run}/{times[ii]}{filename_format}"
         t[ii] = get_Time(filename)
-        print(f"       time = {t[ii]/1000} ps\n\n")
+        print(f"       time = {t[ii]} ps\n\n")
         print(filename)
         u = mda.Universe(filename)
         box=u.dimensions
@@ -191,12 +191,8 @@ for frame_time in frame_times:
     # cada columna de EFG corresponde al litio de group_Li (EN ESE ORDEN)    
     EFG = np.array(EFG)
     # EFG.shape --> (NtimeSteps, NLiAtoms, 3, 3)
-    
-    
-    
     #%%
-    ### EXPORT DATA
-    
+    ### EXPORT DATA    
     Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
     Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
     
