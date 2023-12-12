@@ -96,7 +96,7 @@ runs = ["frames_HQ_1", "frames_HQ_2"]
 
 # path = f"../DATA/2023-12_DME/"
 # filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
-path = f"../DATA/2023-12_TEGDME/"
+path = f"T:/MD/2023-12_TEGDME/"
 filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
 
 
@@ -206,7 +206,7 @@ for frame_time in frame_times:
     #%%
     header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
               r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
-    filename = f"{path}EFG_{frame_time}_{run}.dat"
+    filename = f"{path}/resultados/EFG_{frame_time}_{run}.dat"
     np.savetxt(filename, data, header=header)
         
     # #%% Calculo el profucto de EFG a tiempo t y a tiempo 0
