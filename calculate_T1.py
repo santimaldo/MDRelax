@@ -20,7 +20,7 @@ I = 1.5 # spin 3/2
 
 gamma = 0.17 # Sternhemmer factor 
 
-tau_c = 10 * 1e-12 # s
+tau_c = 6* 1e-12 # s
 efg_variance = 0.020658403595027623 * ke**2 * e**2 / (1e-10)**6 # (V/m)^2
 
 

@@ -105,8 +105,6 @@ fignum = 2
 fig = plt.figure(num=fignum, figsize=(12, 8))
 colors = ['k', 'b', 'r', 'g']
 run_ind = -1
-promedio = 0
-promedios_promedios = 0
 ii, jj = -1,-1
 for frame_time in frame_times:
   ii+=1
@@ -130,20 +128,20 @@ for frame_time in frame_times:
         promedio_entre_litios = 0
         if nn>0: alpha=0.5
         ax.plot(tau, acf, label=f"Li{nn+1}", lw=2,
-                 color=colors[run_ind], alpha=alpha)        
-        promedio_entre_litios += acf
-        promedio += acf             
+                 color=colors[run_ind], alpha=alpha)                    
       ax.axhline(0, color='k', ls='--')
       ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
-      promedios_promedios += promedio_entre_litios
+
       
 ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
                       rowspan=int(Nruns/2),colspan=int(Nruns/2))
 
-label = "Promedio sobre el total\n de trayectorias y litios"
-ax.plot(tau, promedio/Nruns, color='yellow', label=label, lw=3)        
-label = "Promedio sobre trayectorias\n del promedio sobre litios"
-ax.plot(tau, promedios_promedios*2/run_ind, color='orange', label=label, lw=3)        
+promedio = np.mean(acf_data, axis=(1,2))
+datos = np.array([tau, promedio]).T
+np.savetxt(f"{path}/ACF-mean.dat", datos)
+
+label = "Mean ACF"
+ax.plot(tau, promedio, color='orange', label=label, lw=3)        
 ax.axhline(0, color='k', ls='--')
 ax.set_ylabel(r"ACF $[e^2/\AA^3]$", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
@@ -160,9 +158,9 @@ fignum = 3
 fig = plt.figure(num=fignum, figsize=(12, 8))
 colors = ['k', 'b', 'r', 'g']
 run_ind = -1
-promedio = 0
-promedios_promedios = 0
 ii, jj = -1,-1
+
+cumulative_data = np.zeros_like(acf_data)
 for frame_time in frame_times:
   ii+=1
   for run in runs:
@@ -176,9 +174,9 @@ for frame_time in frame_times:
       if jj%2==1:
           ax.yaxis.set_ticklabels([])
       else:
-          ax.set_ylabel(r"$\tau_c$ [ps]", fontsize=16)
+          ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
       
-      ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+      ax.set_xlabel(r"$C(\tau)$ [ps]", fontsize=16)
       for nn in range(2): # 2, uno para cada litio
         acf = acf_data[:,run_ind, nn]
         alpha = 1
@@ -186,24 +184,23 @@ for frame_time in frame_times:
         if nn>0: alpha=0.5
         
         integral = cumulative_trapezoid(acf, x=tau, initial=0)
-        corr_time = integral/efg_variance[run_ind, nn]        
-        ax.plot(tau, corr_time, label=f"Li{nn+1}", lw=2,
-                 color=colors[run_ind], alpha=alpha)        
-        promedio_entre_litios += corr_time
-        promedio += corr_time   
+        cumulative = integral/efg_variance[run_ind, nn]        
+        ax.plot(tau, cumulative, label=f"Li{nn+1}", lw=2,
+                 color=colors[run_ind], alpha=alpha)           
+        # guardo los datos para luego promediar
+        cumulative_data[:, run_ind, nn] = cumulative
       ax.axhline(0, color='k', ls='--')
-      ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
-      promedios_promedios += promedio_entre_litios
+      ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")      
+      
+      
       
 ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
                       rowspan=int(Nruns/2),colspan=int(Nruns/2))
-
-label = "Promedio sobre el total\n de trayectorias y litios"
-ax.plot(tau, promedio/Nruns, color='yellow', label=label, lw=3)        
-label = "Promedio sobre trayectorias\n del promedio sobre litios"
-ax.plot(tau, promedios_promedios*2/run_ind, color='orange', label=label, lw=3)        
+cumulative_promedio = np.mean(cumulative_data, axis=(1,2))
+label = "Mean Cumulative"
+ax.plot(tau, cumulative_promedio, color='orange', label=label, lw=3)        
 ax.axhline(0, color='k', ls='--')
-ax.set_ylabel(r"$\tau_c$ [ps]", fontsize=16)
+ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
 ax.yaxis.set_label_position("right")
 ax.yaxis.tick_right()
@@ -211,7 +208,7 @@ ax.legend()
 title = f"{solvent}"\
         r"$-Li_2S_6$"+"\n"\
         r" Cumulative Integral of ACF:   "\
-        r"$\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
+        r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
         r"$\langle\sum_{\alpha\beta}V_{\alpha\beta}(0)$"\
         r"$V_{\alpha\beta}\rangle(t') dt'$"
 fig.suptitle(title, fontsize=18)
