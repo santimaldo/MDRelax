@@ -11,15 +11,34 @@ read ACF functions and average
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import savgol_filter
-from scipy.integrate import cumulative_trapezoid
+from scipy.integrate import cumulative_trapezoid, simpson
 plt.rcParams.update({'font.size': 12})
+
+#%%
+def cumulative_simpson(ydata, x=None, initial=0):
+    """
+    Compute cumulative integra with simpson's rule
+    ydata must be a 1D array
+    """
+    # inicializo    
+    if x is None: x=np.arange(ydata.size)        
+    integral = np.zeros_like(ydata)
+    integral[0] = initial
+    for nf in range(1, ydata.size):         
+        ytmp, xtmp = ydata[:nf+1], x[:nf+1]    
+        integral[nf] = simpson(ytmp, x=xtmp)    
+    return integral
+        
+    
+    
+
 #%%
 frame_times = ["500ps", "1ns"]
 runs = ["frames_HQ_1", "frames_HQ_2"]
 
 # frame_times = ["500ps"]
 # runs = ["frames_HQ_1"]
-solvent = "TEGDME"
+solvent = "DME"
 
 path = f"../DATA/2023-12_{solvent}/results/"
 
@@ -119,13 +138,12 @@ for frame_time in frame_times:
       if jj%2==1:
           ax.yaxis.set_ticklabels([])
       else:
-          ax.set_ylabel(r"ACF $[e^2/\AA^3]$", fontsize=16)
+          ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
       
       ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
       for nn in range(2): # 2, uno para cada litio
         acf = acf_data[:,run_ind, nn]
-        alpha = 1
-        promedio_entre_litios = 0
+        alpha = 1        
         if nn>0: alpha=0.5
         ax.plot(tau, acf, label=f"Li{nn+1}", lw=2,
                  color=colors[run_ind], alpha=alpha)                    
@@ -136,14 +154,14 @@ for frame_time in frame_times:
 ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
                       rowspan=int(Nruns/2),colspan=int(Nruns/2))
 
-promedio = np.mean(acf_data, axis=(1,2))
-datos = np.array([tau, promedio]).T
+acf_promedio = np.mean(acf_data, axis=(1,2))
+datos = np.array([tau, acf_promedio]).T
 np.savetxt(f"{path}/ACF-mean.dat", datos)
 
 label = "Mean ACF"
-ax.plot(tau, promedio, color='orange', label=label, lw=3)        
+ax.plot(tau, acf_promedio, color='orange', label=label, lw=3)        
 ax.axhline(0, color='k', ls='--')
-ax.set_ylabel(r"ACF $[e^2/\AA^3]$", fontsize=16)
+ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
 ax.yaxis.set_label_position("right")
 ax.yaxis.tick_right()
@@ -176,15 +194,15 @@ for frame_time in frame_times:
       else:
           ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
       
-      ax.set_xlabel(r"$C(\tau)$ [ps]", fontsize=16)
+      ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
       for nn in range(2): # 2, uno para cada litio
         acf = acf_data[:,run_ind, nn]
-        alpha = 1
-        promedio_entre_litios = 0
+        alpha = 1        
         if nn>0: alpha=0.5
         
-        integral = cumulative_trapezoid(acf, x=tau, initial=0)
-        cumulative = integral/efg_variance[run_ind, nn]        
+        # integral = cumulative_trapezoid(acf, x=tau, initial=0)
+        integral = cumulative_simpson(acf, x=tau, initial=0)
+        cumulative = integral/efg_variance[run_ind, nn] 
         ax.plot(tau, cumulative, label=f"Li{nn+1}", lw=2,
                  color=colors[run_ind], alpha=alpha)           
         # guardo los datos para luego promediar
@@ -193,12 +211,25 @@ for frame_time in frame_times:
       ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")      
       
       
-      
 ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
-                      rowspan=int(Nruns/2),colspan=int(Nruns/2))
-cumulative_promedio = np.mean(cumulative_data, axis=(1,2))
-label = "Mean Cumulative"
-ax.plot(tau, cumulative_promedio, color='orange', label=label, lw=3)        
+                      rowspan=int(Nruns/2),colspan=int(Nruns/2))     
+# Primero promedio y luego integro:
+acf_promedio= np.mean(acf_data, axis=(1,2))
+integral = cumulative_simpson(acf_promedio, x=tau, initial=0)
+cumulative_promedio = integral/np.mean(efg_variance)
+# guardo datos
+datos = np.array([tau, cumulative_promedio]).T
+np.savetxt(f"{path}/Cumulative-mean.dat", datos)
+# grafico
+label = "Cumulative of ACF mean"
+ax.plot(tau, cumulative_promedio, label=label, lw=3, color='orange') 
+
+# calculo el promedio de las cumulativas:
+# promedio_de_cumulatives = np.mean(cumulative_data, axis=(1,2))
+# label = "Mean of Cumulatives"
+# ax.plot(tau, promedio_de_cumulatives, '--', color='gray', label=label, lw=2) 
+
+       
 ax.axhline(0, color='k', ls='--')
 ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
@@ -214,46 +245,3 @@ title = f"{solvent}"\
 fig.suptitle(title, fontsize=18)
 fig.tight_layout()
 fig.savefig(f"{path}/Figuras/CorrelationTime.png")
-
-# #%%
-# fignum =30
-# fig, axs = plt.subplots(num=fignum, nrows=1, ncols=2, figsize=(10, 6))
-
-# ax = axs[0]
-# label = "Promedio sobre el total\n de trayectorias y litios"
-# ax.plot(tau, promedio/Nruns, color='yellow', label=label, lw=3)        
-# label = "Promedio sobre trayectorias\n del promedio sobre litios"
-# ax.plot(tau, promedios_promedios*2/run_ind, color='orange', label=label, lw=3)        
-# ax.axhline(0, color='k', ls='--')
-# ax.set_ylabel("ACF", fontsize=16)
-# ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
-# ax.legend()
-# # ---------------------------------------
-# ax = axs[1]
-# label = "Promedio sobre el total\n de trayectorias y litios"
-# integral0 = cumulative_trapezoid(promedio/Nruns, x=tau, initial=0)
-# ax.plot(tau, integral0, color='yellow', label=label, lw=3)        
-
-# label = "Promedio sobre trayectorias\n del promedio sobre litios"
-# integral1 = cumulative_trapezoid(promedios_promedios*2/run_ind, x=tau, initial=0)
-# ax.plot(tau, integral1, color='orange', label=label, lw=3)        
-
-# ax.axhline(0, color='k', ls='--')
-# ax.set_ylabel("ACF", fontsize=16)
-# ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
-# ax.yaxis.set_label_position("right")
-# ax.yaxis.tick_right()
-# ax.legend()
-
-
-# fig.suptitle(fr"{solvent}$-Li_2S_6$", fontsize=22)
-# fig.tight_layout()
-
-# # s0, s1 = savgol_filter(suma[:,0], 500, 3), savgol_filter(suma[:,1], 500, 3)
-# # # s0, s1 = suma[:,0], suma[:,1]
-
-# # integral0, integral1 = cumulative_trapezoid(s0, x=t, initial=0), cumulative_trapezoid(s1, x=t, initial=0)
-
-# # plt.figure(10)
-# # plt.plot(t, integral0)
-# # plt.plot(t, integral1)
