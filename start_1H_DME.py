@@ -11,6 +11,7 @@ First script to test the 1H relaxation summation
 import numpy as np
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
+import MDAnalysis.analysis.rdf
 import pandas as pd
 import nmrformd as nmrmd
 import time
@@ -34,26 +35,26 @@ u = mda.Universe(path+"HQ_npt-500ps_2.tpr", path+"HQ_npt-500ps_2.xtc")
 Hs = u.select_atoms("name H*")
 
 dt = 0.01 # ps
-ni = 0 # "number_i"
+ni = 40 # "number_i"
 start_time = time.time()
 end_time = time.time()
 
 print("calculando intra...")
-nmr_Hs_intra = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actua_dt=dt, number_i=ni,
+nmr_Hs_intra = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actual_dt=dt, number_i=ni,
                          type_analysis="intra_molecular")
 
 elapsed_time = time.time() - end_time
 end_time = time.time()
 print(f'Time elapsed: {elapsed_time/60} minutes')
 print("calculando inter...")
-nmr_Hs_inter = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actua_dt=dt, number_i=ni,
+nmr_Hs_inter = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actual_dt=dt, number_i=ni,
                          type_analysis="inter_molecular")
 elapsed_time = time.time() - end_time
 end_time = time.time()
 print(f'Time elapsed: {elapsed_time/60} minutes')
 
 print("calculando total...")
-nmr_Hs = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actua_dt=dt, number_i=ni)
+nmr_Hs = nmrmd.NMR(u, atom_group=Hs, isotropic=True, actual_dt=dt, number_i=ni)
 elapsed_time = time.time() - end_time
 end_time = time.time()
 print(f'Time elapsed: {elapsed_time/60} minutes')
@@ -77,7 +78,8 @@ ACF = nmr_Hs.gij[0,:]
 tau = np.arange(ACF.size)*dt
 
 data = np.array([tau, ACF, ACF_intra, ACF_inter]).T
-if n!=0:
+#%%
+if ni!=0:
     header = f"tau (ps)    ACF    ACF_intra    ACF_inter \n "\
              f"calculated with {ni} atoms (over {Hs.n_atoms} total H atoms)"
 else:
@@ -127,3 +129,5 @@ plt.show()
 
 
 
+
+# %%
