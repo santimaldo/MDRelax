@@ -11,7 +11,7 @@ Vamos a analizar los 1H en la primera esfera de solvatacion del Li
 import numpy as np
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
-from MDAnalysis.lib.distances import distance_array
+#from MDAnalysis.lib.distances import distance_array
 import pandas as pd
 import nmrformd as nmrmd
 import time
@@ -43,7 +43,7 @@ Li_group = u.select_atoms("name Li*")
 
 ## selecciono los atomos de H:
 # Define a distance threshold (e.g., 5.0 Å)
-distance_threshold = 3.5
+distance_threshold = 3.8
 # Compute the distance array
 distances = mda.lib.distances.distance_array(H_group, Li_group)
 # Create a mask for atoms within the distance threshold
