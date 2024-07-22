@@ -24,7 +24,7 @@ u = mda.Universe(path+"HQ_npt-500ps_2.tpr", path+"HQ_npt-500ps_2.xtc")
 #path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
 #u = mda.Universe(path+"HQ_npt-500ps_1.tpr", path+"HQ_npt-500ps_1.xtc")
 
-dt = 0.01 # ps
+dt = u.trajectory.dt # units of ps
 ni = 40 # "number_i"
 start_time = time.time()
 box = u.dimensions
@@ -51,25 +51,27 @@ n_i = len(H_bond)
 
 print("Comenzazmos con H_bond")
 print("calculando intra...") #(si no es intra, es inter_molecular)
-nmr_H_bond_intra = nmrmd.NMR(u, atom_group=H_bond, isotropic=True, actual_dt=dt, number_i=ni,
-                         type_analysis="intra_molecular", neighbor_group=H_group)
+nmr_H_bond_intra = nmrmd.NMR(u, atom_group=H_bond, isotropic=True, #actual_dt=dt, 
+                            type_analysis="intra_molecular", neighbor_group=H_group)
 print("calculando inter...")
-nmr_H_bond_inter= nmrmd.NMR(u, atom_group=H_bond, isotropic=True, actual_dt=dt, number_i=ni,
+nmr_H_bond_inter= nmrmd.NMR(u, atom_group=H_bond, isotropic=True, #actual_dt=dt,
                          type_analysis="inter_molecular", neighbor_group=H_group)
 print("calculando total...")
-nmr_H_bond= nmrmd.NMR(u, atom_group=H_bond, isotropic=True, actual_dt=dt, number_i=ni, neighbor_group=H_group)
+nmr_H_bond= nmrmd.NMR(u, atom_group=H_bond, isotropic=True, #actual_dt=dt
+                        neighbor_group=H_group)
 elapsed_time = time.time() - end_time
 end_time = time.time()
 #---------------------------------------------------------------
 print("Continuamos con H_free")
 print("calculando intra...") #(si no es intra, es inter_molecular)
-nmr_H_free_intra = nmrmd.NMR(u, atom_group=H_free, isotropic=True, actual_dt=dt, number_i=ni,
-                         type_analysis="intra_molecular", neighbor_group=H_group)
+nmr_H_free_intra = nmrmd.NMR(u, atom_group=H_free, isotropic=True,# actual_dt=dt, 
+                            number_i=ni, type_analysis="intra_molecular", neighbor_group=H_group)
 print("calculando inter...")
-nmr_H_free_inter = nmrmd.NMR(u, atom_group=H_free, isotropic=True, actual_dt=dt, number_i=ni,
-                         type_analysis="inter_molecular", neighbor_group=H_group)
+nmr_H_free_inter = nmrmd.NMR(u, atom_group=H_free, isotropic=True,# actual_dt=dt, 
+                            number_i=ni, type_analysis="inter_molecular", neighbor_group=H_group)
 print("calculando total...")
-nmr_H_free = nmrmd.NMR(u, atom_group=H_free, isotropic=True, actual_dt=dt, number_i=ni, neighbor_group=H_group)
+nmr_H_free = nmrmd.NMR(u, atom_group=H_free, isotropic=True, #actual_dt=dt, 
+                        number_i=ni, neighbor_group=H_group)
 elapsed_time = time.time() - end_time
 end_time = time.time()
 print(f'Time elapsed: {elapsed_time/60} minutes')
