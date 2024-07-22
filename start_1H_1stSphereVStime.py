@@ -52,7 +52,7 @@ within_threshold = distances < distance_threshold
 H_group_within_threshold = H_group[np.any(within_threshold, axis=1)]
 # Create a new AtomGroup called H_bond with the selected atoms
 H_bond = u.select_atoms('index ' + ' '.join(map(str, H_group_within_threshold.indices)))
-print("Number of selected H atoms:", len(H_bond))
+print("Number of selected H_bond atoms:", len(H_bond))
 
 #%%
 box = u.dimensions
