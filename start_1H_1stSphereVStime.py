@@ -45,7 +45,7 @@ Li_group = u.select_atoms("name Li*")
 # Define a distance threshold (e.g., 5.0 Å)
 distance_threshold = 3.5
 # Compute the distance array
-distances = distance_array(H_group.positions, Li_group.positions)
+distances = mda.lib.distances.distance_array(H_group, Li_group)
 # Create a mask for atoms within the distance threshold
 within_threshold = distances < distance_threshold
 # Determine which H atoms are within the threshold
