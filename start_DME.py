@@ -94,7 +94,7 @@ def calculate_EFG(q, r, x, y, z):
 frame_times = ["500ps", "1ns"]
 runs = ["frames_HQ_1", "frames_HQ_2"]
 # path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
-path = f"../DATA/2023-12_DME/"
+path = f"../GromacsFiles/2024-08-15_DME_2nd-test/"
 filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
 
 
