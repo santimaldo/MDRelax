@@ -51,7 +51,7 @@ def get_Charges(species_list):
                     else:
                         break
         # esto se basa en que el atomo y la carga son las columnas 4 y 6
-        charges_df_species = pd.read_csv(f"{path}/{species}.charges", delim_whitespace=True, header=None, skiprows=1)
+        charges_df_species = pd.read_csv(f"{path}/{species}.charges", sep='\s+', header=None, skiprows=1)
         charges_df_species =charges_df_species.iloc[:, 4:7:2].drop_duplicates()
         charges_df_species.columns =["AtomType", "Charge"]
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
@@ -108,7 +108,7 @@ def calculate_EFG(q, r, x, y, z):
 path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
-
+dt = 0.01 # ps paso temporal de guardado
 frame_times = [f"{t:.1f} ps" for t in [0.5,1,1.5,2]]
 MDfiles = [f"HQ.{i}" for i in range(6,10)]
 
@@ -125,26 +125,18 @@ for idx in range(len(MD_files))
     center = box[0:3]/2
         
     
-    # times = np.arange(11)*10
-    times = np.arange(3001)*10
-    t = np.zeros(times.size)
+    # tiempo en ps
+    t = np.arange(len(u.trajectory))*dt        
     
     EFG = []
     Li_positions = []
     St_positions = []
     Si_positions = []
-    for ii in range(times.size):        
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")    
-        # Load the GROMACS .gro file    
-        filename = f"{path}{frame_time}/{run}/{times[ii]}{filename_format}"
-        t[ii] = get_Time(filename)
-        print(f"       time = {t[ii]} ps\n\n")
-        print(filename)
-        u = mda.Universe(filename)
-        box=u.dimensions
-        center = box[0:3]/2
-        Charges = get_Charges(filename)
-    
+    for ii in range(len(u.trajectory)):        
+        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")                    
+        print(f"       time = {t[ii]} ps\n\n")        
+        u.trajectory.ts
+
         group_Li = u.select_atoms("name Li*")    
         Li_pos_t = []
         St_pos_t = []
