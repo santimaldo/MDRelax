@@ -13,8 +13,53 @@ import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import pandas as pd
 
+
 #%%
-def get_Charges(filename):
+def get_Charges(species_list):
+    """    
+    get charges of the species
+    Parameters
+    ----------
+    species_list : list of strings
+        The name of the *.itp files where the atoms' parameters
+        are stored. 
+        E.g: ["Li", "S6", "DME_7CB8A2"]
+
+    Returns
+    -------
+    Charges : dataFrame ['AtomType',  'Charge']
+    """    
+
+    charges_df = pd.DataFrame(columns=["AtomType", "Charge"])
+    for species in species_list:
+        with open(f"{path}park.ff/{species}.itp", "r") as f:    
+            with open(f"{path}/{species}.charges", "w") as wf:
+                for ii in range(1000):        
+                    condition_i = "[ atoms ]" in f.readline()
+                    if condition_i: 
+                        # guardo los headers
+                        wf.write(f.readline()[1:]) #[1:] es para que no escriba el ";"
+                        break        
+                for ii in range(50):
+                    line = f.readline()
+                    try:            
+                        condition = line.split()[0].isnumeric()            
+                    except: # si la fila esta en blanco, corta
+                        condition = False
+                    if condition:
+                        wf.write(line)
+                    else:
+                        break
+        # esto se basa en que el atomo y la carga son las columnas 4 y 6
+        charges_df_species = pd.read_csv(f"{path}/{species}.charges", delim_whitespace=True, header=None, skiprows=1)
+        charges_df_species =charges_df_species.iloc[:, 4:7:2].drop_duplicates()
+        charges_df_species.columns =["AtomType", "Charge"]
+        charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
+    return charges_df    
+
+
+#%%
+def get_Charges_old(filename):
     """    
     Parameters
     ----------
@@ -91,21 +136,24 @@ def calculate_EFG(q, r, x, y, z):
 # Primero leo el tiempo 0 para establecer algunos valores generales del universo
 
 
-frame_times = ["500ps", "1ns"]
-runs = ["frames_HQ_1", "frames_HQ_2"]
-# path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
-path = f"../GromacsFiles/2024-08-15_DME_2nd-test/"
-filename_format = ".fs.gro" # los archivos se llaman: <time>{filename_format}
+path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
+species_list ["Li", "S6", "DME_7CB8A2"]
 
 
-for frame_time in frame_times:
-  for run in runs:
+frame_times = [f"{t:.1f} ps" for t in [0.5,1,1.5,2]]
+MDfiles = [f"HQ.{i}" for i in range(6,10)]
 
-    filename = f"{path}{frame_time}/{run}/0{filename_format}"    
-    u = mda.Universe(filename)
+
+
+Charges = get_Charges(species_list)
+for idx in range(len(MD_files))
+    frame_time = frame_times[idx]
+    filename = MDfiles[idx]    
+
+    u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
     box=u.dimensions
     center = box[0:3]/2
-    Charges = get_Charges(filename)
+    
     
     
     # times = np.arange(11)*10
