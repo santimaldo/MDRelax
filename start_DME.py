@@ -7,7 +7,7 @@ Created on Thu Nov  2 16:33:25 2023
 
 First script to test the EFG summation
 """
-
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
@@ -57,35 +57,6 @@ def get_Charges(species_list):
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
     return charges_df    
 
-
-#%%
-def get_Charges_old(filename):
-    """    
-    Parameters
-    ----------
-    filename : string
-        The .gro gromacs autput file with x,y,z positions, and the charge in 
-        thefollowing column
-
-    Returns
-    -------
-    Charges : dataFrame ['AtomType',  'Charge']
-    """    
-    df =pd.read_csv(filename, delim_whitespace=True, skiprows=2, 
-                    index_col=False, header=None, 
-                    names=['molecule', 'atom', 'n', 'x', 'y', 'z', 'q'])
-    # drop the last row (box information)
-    df.drop(df.tail(1).index,inplace=True)
-    
-    atoms = df['atom'].unique()
-    Charges = []
-    for atom in atoms:
-        df_tmp = df[df['atom']==atom]
-        q = df_tmp['q'].unique()[0]
-        Charges.append([atom, q])
-    Charges = pd.DataFrame(Charges, columns=['AtomType','Charge'])
-    return Charges
-
 def get_Time(filename):
     
     with open(filename, 'r') as file:
@@ -102,8 +73,6 @@ def get_Time(filename):
         return 0
     
     
-
-
 def calculate_EFG(q, r, x, y, z):
     """
     Calculate de EFG based on charge points.
@@ -137,7 +106,7 @@ def calculate_EFG(q, r, x, y, z):
 
 
 path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
-species_list ["Li", "S6", "DME_7CB8A2"]
+species_list = ["Li", "S6", "DME_7CB8A2"]
 
 
 frame_times = [f"{t:.1f} ps" for t in [0.5,1,1.5,2]]
@@ -146,6 +115,7 @@ MDfiles = [f"HQ.{i}" for i in range(6,10)]
 
 
 Charges = get_Charges(species_list)
+#%%
 for idx in range(len(MD_files))
     frame_time = frame_times[idx]
     filename = MDfiles[idx]    
@@ -153,8 +123,7 @@ for idx in range(len(MD_files))
     u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
     box=u.dimensions
     center = box[0:3]/2
-    
-    
+        
     
     # times = np.arange(11)*10
     times = np.arange(3001)*10
