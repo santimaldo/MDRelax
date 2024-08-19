@@ -108,7 +108,6 @@ def calculate_EFG(q, r, x, y, z):
 path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
-dt = 0.01 # ps paso temporal de guardado
 frame_times = [f"{t:.1f} ps" for t in [0.5,1,1.5,2]]
 MDfiles = [f"HQ.{i}" for i in range(6,10)]
 
@@ -116,26 +115,31 @@ MDfiles = [f"HQ.{i}" for i in range(6,10)]
 
 Charges = get_Charges(species_list)
 #%%
-for idx in range(len(MD_files))
+for idx in range(len(MDfiles)):
     frame_time = frame_times[idx]
     filename = MDfiles[idx]    
 
-    u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
+    # u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
+    u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.trr")
     box=u.dimensions
     center = box[0:3]/2
-        
-    
+            
     # tiempo en ps
-    t = np.arange(len(u.trajectory))*dt        
+    trajectory = u.trajectory[:10000:10]
+    t = np.zeros(len(trajectory))
     
     EFG = []
     Li_positions = []
     St_positions = []
     Si_positions = []
-    for ii in range(len(u.trajectory)):        
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")                    
-        print(f"       time = {t[ii]} ps\n\n")        
-        u.trajectory.ts
+
+    nn = -1
+    for timestep in trajectory:
+        nn+=1 
+        print("++++++++++++++++++++++++++++++++++++++++++")                    
+        n_frame = u.trajectory.frame
+        t[nn] = u.trajectory.time
+        print(f"dataset {idx}, frame={n_frame}, time = {t[nn]} ps\n\n")                
 
         group_Li = u.select_atoms("name Li*")    
         Li_pos_t = []
@@ -200,7 +204,7 @@ for idx in range(len(MD_files))
     # cada columna de EFG corresponde al litio de group_Li (EN ESE ORDEN)    
     EFG = np.array(EFG)
     # EFG.shape --> (NtimeSteps, NLiAtoms, 3, 3)
-    #%%
+    #%%----------------------------------------------------------
     ### EXPORT DATA    
     Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
     Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
@@ -209,92 +213,96 @@ for idx in range(len(MD_files))
     for nn in range(group_Li.n_atoms):    
         data += [Vxx[:,nn], Vyy[:,nn], Vzz[:,nn], Vxy[:,nn], Vyz[:,nn], Vxz[:,nn]]
     
-    data = np.array(data).T
-    #%%
+    data = np.array(data).T    
     header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
               r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
-    filename = f"{path}EFG_{frame_time}_{run}.dat"
+    filename = f"{path}/MDRelax/EFG_{frame_time}.dat"
     np.savetxt(filename, data, header=header)
+    #----------------------------------------------------------
+    #%% Calculo el profucto de EFG a tiempo t y a tiempo 0
+    t = t - t[0]
+    
+    ACF = np.zeros([t.size, group_Li.n_atoms])
+    for ii in range(group_Li.n_atoms):
+        efg_nLi = EFG[:,ii,:,:]    
+        ACF[:,ii] = np.sum(efg_nLi*efg_nLi[0,:,:], axis=(1,2))
         
-    # #%% Calculo el profucto de EFG a tiempo t y a tiempo 0
-    # t = t - t[0]
-    
-    # ACF = np.zeros([t.size, group_Li.n_atoms])
-    # for ii in range(group_Li.n_atoms):
-    #     efg_nLi = EFG[:,ii,:,:]    
-    #     ACF[:,ii] = np.sum(efg_nLi*efg_nLi[0,:,:], axis=(1,2))
-        
-    #     plt.figure(0)
-    #     plt.plot(t, ACF[:,ii]/ACF[0,ii],'o-', label = rf'$Li_{ii+1}$')
-    # plt.plot(t, np.mean(ACF, axis=1)/np.mean(ACF, axis=1)[0],'o-', label = r'mean')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    # plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
-    # plt.gca().axhline(0, color='k', ls='--')
-    # plt.legend()
+        plt.figure(0)
+        plt.plot(t, ACF[:,ii]/ACF[0,ii],'o-', label = rf'$Li_{ii+1}$')
+    plt.plot(t, np.mean(ACF, axis=1)/np.mean(ACF, axis=1)[0],'o-', label = r'mean')
+    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+    plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
+    plt.gca().axhline(0, color='k', ls='--')
+    plt.legend()
     
     
-    # plt.show()
+    plt.show()
     
-    # #---------------
-    # #%% Calculo el profucto de EFG a tiempo t y a tiempo 0,
-    # ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
+    #---------------
+    #%% Calculo el profucto de EFG a tiempo t y a tiempo 0,
+    ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
     
-    # efg = EFG
-    # acf = np.zeros([t.size, group_Li.n_atoms])
-    # Num_promedios = np.zeros(t.size)
-    # for ii in range(t.size):    
-    #     tau = ii*10
-    #     jj, t0, acf_ii = 0, 0, 0
-    #     while t0+tau<=times[-1]:
-    #         print(f"tau = {tau} fs, t0 = {t0} ps, ---------{jj}")                
-    #         acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
-    #         jj+=1
-    #         t0 = jj*10
-    #     print(f"el promedio es dividir por {jj}")
-    #     acf[ii,:] = acf_ii/jj
-    #     Num_promedios[ii] = jj
-    # #%%
-    # plt.figure(44847)
-    # plt.plot(t, Num_promedios,'k--')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+
+
+
+    #### CORREGIR ESTO!!!!!
+
+    efg = EFG
+    acf = np.zeros([t.size, group_Li.n_atoms])
+    Num_promedios = np.zeros(t.size)
+    for ii in range(t.size):    
+        tau = ii
+        jj, t0, acf_ii = 0, 0, 0
+        while t0+tau<=times[-1]:
+            print(f"tau = {tau} fs, t0 = {t0} ps, ---------{jj}")                
+            acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
+            jj+=1
+            t0 = jj
+        print(f"el promedio es dividir por {jj}")
+        acf[ii,:] = acf_ii/jj
+        Num_promedios[ii] = jj
+    #%%
+    plt.figure(44847)
+    plt.plot(t, Num_promedios,'k--')
+    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
     
-    # plt.ylabel(r"Numero de promedios",
-    #            fontdict={'fontsize':16})
+    plt.ylabel(r"Numero de promedios",
+               fontdict={'fontsize':16})
     
-    # plt.figure(44848)
-    # for jj in range(group_Li.n_atoms):        
-    #     # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
-    #              # label=f'Li {jj+1}, Sin promediar')   
-    #     plt.plot(t, acf[:,jj], 'o-', 
-    #              label=rf'$Li_{jj+1}$')
+    plt.figure(44848)
+    for jj in range(group_Li.n_atoms):        
+        # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
+                 # label=f'Li {jj+1}, Sin promediar')   
+        plt.plot(t, acf[:,jj], 'o-', 
+                 label=rf'$Li_{jj+1}$')
             
-    # plt.plot(t, np.mean(acf, axis=1),'o-', 
-    #          label = r'mean')
+    plt.plot(t, np.mean(acf, axis=1),'o-', 
+             label = r'mean')
     
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
     
-    # plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
-    #            fontdict={'fontsize':16})
+    plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
+               fontdict={'fontsize':16})
     
-    # # plt.xlim([0,3])
-    # plt.gca().axhline(0, color='k', ls='--')
-    # # plt.gca().axhline(1, color='k', ls='--')
-    # plt.tight_layout()
-    # plt.legend(loc='center right')
-    # plt.savefig(f"{path}ACF.png")
-    # plt.show()
-    
-    # #%%
-    # plt.figure(44849)
-    # plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
-    #          label = r'Promedio entre atomos de Li y en $<>_t$')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    # plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
-    # plt.gca().axhline(0, color='k', ls='--')
+    # plt.xlim([0,3])
+    plt.gca().axhline(0, color='k', ls='--')
     # plt.gca().axhline(1, color='k', ls='--')
-    # plt.tight_layout()
-    # plt.legend()
-    # plt.savefig(f"{path}ACFnorm.png")
-    # plt.show()
+    plt.tight_layout()
+    plt.legend(loc='center right')
+    plt.savefig(f"{path}/MDRelax/ACF.png")
+    plt.show()
+    
+    #%%
+    plt.figure(44849)
+    plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
+             label = r'Promedio entre atomos de Li y en $<>_t$')
+    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+    plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
+    plt.gca().axhline(0, color='k', ls='--')
+    plt.gca().axhline(1, color='k', ls='--')
+    plt.tight_layout()
+    plt.legend()
+    plt.savefig(f"{path}/MDRelax/ACFnorm.png")
+    plt.show()
     
     
