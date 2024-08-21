@@ -19,7 +19,7 @@ def get_Charges(species_list, path):
     Charges : dataFrame ['AtomType',  'Charge']
     """    
 
-    charges_df = pd.DataFrame(columns=["AtomType", "Charge"])
+    charges_df = pd.DataFrame(columns=["AtomType", "Charge"])#, "atom", "residue"])
     for species in species_list:
         with open(f"{path}park.ff/{species}.itp", "r") as f:    
             with open(f"{path}/{species}.charges", "w") as wf:
@@ -41,7 +41,7 @@ def get_Charges(species_list, path):
                         break
         # esto se basa en que el atomo y la carga son las columnas 4 y 6
         charges_df_species = pd.read_csv(f"{path}/{species}.charges", sep='\s+', header=None, skiprows=1)
-        charges_df_species =charges_df_species.iloc[:, 4:7:2].drop_duplicates()
+        charges_df_species[[]] =charges_df_species.iloc[:, 4:7:2].drop_duplicates()
         charges_df_species.columns =["AtomType", "Charge"]
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
     return charges_df    
