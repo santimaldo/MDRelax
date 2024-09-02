@@ -6,29 +6,7 @@ Created on Thu Nov  2 16:33:25 2023
 @author: santi
 
 First script to test the EFG summation
-
-
-TO DO LIST:
-
-+ hacer un modulo de funciones.
-+ separar el calculo de EFG por especie
-+ reemplazar las listas por estructuras mas optimas como np.arrays ¿o dataframes?
-
-
 """
-# ii = 0
-# from MDAnalysis.analysis.rdf import InterRDF
-# Li_resids = [atom.resid for atom in u.select_atoms("name Li*")]
-
-# for Li_resid in Li_resids:
-#     ii+=1
-#     plt.figure(ii)
-#     rdf = InterRDF(u.select_atoms(f"resid {Li_resid}"), u.select_atoms("name S6t"))
-#     rdf.run()
-#     plt.plot(rdf.bins, rdf.rdf)
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
@@ -61,8 +39,9 @@ for idx in range(len(MDfiles)):
     trajectory = u.trajectory        
     t = np.arange(len(trajectory))*dt
     # Arreglo EFG:
-    # EFG.shape --> (NtimeSteps, NLiAtoms, 3, 3)    
-    EFG = np.zeros([len(trajectory), NPS*2, 3, 3])    
+    # EFG.shape --> (NtimeSteps, NLiAtoms, 3, 3)        
+    EFG_sulfur = np.zeros([len(trajectory), NPS*2, 3, 3])    
+    EFG_solvent = np.zeros([len(trajectory), NPS*2, 3, 3])    
     nn = -1
     for timestep in trajectory:
         nn+=1 
@@ -76,7 +55,8 @@ for idx in range(len(MDfiles)):
         for Li_atom in group_Li:
             nLi += 1            
             # aqui guarfo el EFG sobre el n-esimo Li al tiempo t:
-            EFG_t_nLi = np.zeros([3,3])
+            EFG_t_nLi_sulfur = np.zeros([3,3])
+            EFG_t_nLi_solvent = np.zeros([3,3])
             for AtomType in Charges['AtomType']:                                           
                 q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
                 
@@ -111,87 +91,28 @@ for idx in range(len(MDfiles)):
                 EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
                                         y_distances, z_distances)
                       
-                # EFG_t = [EFG_t[kk]+EFG_t_AtomType[kk] for kk in range(6)]
-                EFG_t_nLi += EFG_t_AtomType                            
-            EFG[nn, nLi, :, :] = EFG_t_nLi                    
+                if 's6' in AtomType.lower():
+                    EFG_t_nLi_sulfur += EFG_t_AtomType
+                else:
+                    EFG_t_nLi_solvent += EFG_t_AtomType                    
+            EFG_sulfur[nn, nLi, :, :] = EFG_t_nLi_sulfur
+            EFG_solvent[nn, nLi, :, :] = EFG_t_nLi_solvent
     #---------------------------------------------------------
-    ### EXPORT DATA    
-    Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
-    Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
-    
-    data = [t]
-    for nn in range(group_Li.n_atoms):    
-        data += [Vxx[:,nn], Vyy[:,nn], Vzz[:,nn], Vxy[:,nn], Vyz[:,nn], Vxz[:,nn]]
-    
-    data = np.array(data).T    
-    header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
-              r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
-    filename = f"{path}/MDRelax/EFG_{run}.dat"
-    np.savetxt(filename, data, header=header)
-    del EFG
+    ### EXPORT DATA        
+    for EFG, efg_source in zip([EFG_sulfur, EFG_solvent], ["sulfur", "solvent"]):
+        Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
+        Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
+        
+        data = [t]
+        for nn in range(group_Li.n_atoms):    
+            data += [Vxx[:,nn], Vyy[:,nn], Vzz[:,nn], Vxy[:,nn], Vyz[:,nn], Vxz[:,nn]]
+        
+        data = np.array(data).T    
+        header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
+                r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
+        filename = f"{path}/MDRelax/EFG_{efg_source}_{run}.dat"
+        np.savetxt(filename, data, header=header)
+    del EFG_sulfur, EFG_solvent
     #----------------------------------------------------------    
     
-    #---------------
-    #Calculo el profucto de EFG a tiempo t y a tiempo 0,
-    ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
     
-    ### COMENTO ESTO PARA HACER UNA CORRIDA LARGA:
-
-    # dtau = np.diff(t)[0]
-    # efg = EFG
-    # acf = np.zeros([t.size, group_Li.n_atoms])
-    # Num_promedios = np.zeros(t.size)
-    # for ii in range(t.size):    
-    #     tau = ii*dtau
-    #     jj, t0, acf_ii = 0, 0, 0
-    #     while t0+tau<=t[-1]:
-    #         print(f"tau = {tau} ps, t0 = {t0:.2f} ps, ---------{jj}")                
-    #         acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
-    #         jj+=1
-    #         t0 = jj*dtau
-    #     print(f"el promedio es dividir por {jj}")
-    #     acf[ii,:] = acf_ii/jj
-    #     Num_promedios[ii] = jj
-    # #
-    # plt.figure(44847)
-    # plt.plot(t, Num_promedios,'k--')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    
-    # plt.ylabel(r"Numero de promedios",
-    #            fontdict={'fontsize':16})
-    
-    # plt.figure(44848)
-    # for jj in range(group_Li.n_atoms):        
-    #     # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
-    #              # label=f'Li {jj+1}, Sin promediar')   
-    #     plt.plot(t, acf[:,jj], 'o-', 
-    #              label=rf'$Li_{jj+1}$')
-            
-    # plt.plot(t, np.mean(acf, axis=1),'o-', 
-    #          label = r'mean')
-    
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    
-    # plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
-    #            fontdict={'fontsize':16})
-    
-    # plt.xlim([0,t[-1]*0.5])
-    # plt.gca().axhline(0, color='k', ls='--')
-    # # plt.gca().axhline(1, color='k', ls='--')
-    # plt.tight_layout()
-    # plt.legend(loc='center right')
-    # plt.savefig(f"{path}/MDRelax/ACF_{run}.png")
-    # plt.show()
-    
-    # #
-    # plt.figure(44849)
-    # plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
-    #          label = r'Promedio entre atomos de Li y en $<>_t$')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    # plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
-    # plt.gca().axhline(0, color='k', ls='--')
-    # plt.gca().axhline(1, color='k', ls='--')
-    # plt.tight_layout()
-    # plt.legend()
-    # plt.savefig(f"{path}/MDRelax/ACFnorm_{run}.png")
-    # plt.show()    

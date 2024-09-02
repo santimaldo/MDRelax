@@ -6,6 +6,11 @@ Created on Tue Dec  5 12:00:58 2023
 @author: santi
 
 read ACF functions and average
+
+
+
+COMPLETARRRRRRRRRRRR
+
 """
 
 import matplotlib.pyplot as plt
@@ -38,7 +43,6 @@ path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
 runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
-runs = [f"{t:.1f}_ps" for t in [8000]]
 solvent = "DME"
 
 
@@ -49,72 +53,66 @@ Nruns = len(runs)
 # Number of Li ions in a run 
 NLi = 4
 
-
-acf_data = np.zeros([Ntimes, Nruns, NLi])
+EFG_sources = ["sulfur", "solvent"]
+acf_sulfur = np.zeros([Ntimes, Nruns, NLi])
+acf_solvent = np.zeros([Ntimes, Nruns, NLi])
 efg_variance = np.zeros([Nruns, NLi])
-run_ind = 0
+run_ind = -1
 # Loop sobre runs para calcular ACF
-for run in runs:      
-    filename = f"{path}/EFG_{run}.dat"    
-    data = np.loadtxt(filename)
-    # data columns order:    
-    # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
-    # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
-    for nn in range(NLi): #uno para cada litio
-        # plt.plot(data[:,0], data[:,nn+1])
-        t = data[:,0]
-        Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
-        Vxy, Vyz, Vxz = data[:,4+nn*6], data[:,5+nn*6], data[:,6+nn*6]
-                
-        plt.figure(1)
-        plt.plot(t, np.array([Vxx, Vyy, Vzz, Vxy, Vyz, Vxz]).T)                
-        plt.plot(t, Vxx+Vyy+Vzz, 'k', label='Trace')                
-        plt.legend(["Vxx", "Vyy", "Vzz", "Vxy", "Vyz", "Vxz", "Trace: Vxx+Vyy+Vzz"],
-                    ncols=4, fontsize=10)
-        plt.title(f"{solvent};   run:{run};   Li{nn+1}")
-        plt.xlabel("Time [ps]")
-        plt.ylabel(r"EFG [$e/\AA^3$]")
-        plt.tight_layout()
-        plt.savefig(f"{path}Figuras/EFG_{run}_Li{nn+1}.png")
-        plt.close()
-
-        # Calculo ACF
-        Ntau = t.size                               
-        tau = np.zeros([Ntau])
-        acf = np.zeros([Ntau])        
-        efg_squared = np.zeros([Ntau])        
-        dt = t[1]-t[0]
-        for jj in range(Ntau):    
-            tau_jj = jj*dt            
-            max_tau_index = t.size-jj            
-            # jj, t0, acf_ii = 0, 0, 0            
-            # while t0+tau<=times[-1]:
-            acf_jj = 0     
-            if jj%500==0:                       
-                print(f"RUN {run_ind},  Li{nn+1},  tau = {tau_jj:.2f}")
-            for ii in range(0,max_tau_index):
-                # if ii%100==0:
-                #     print(f"tau = {tau_jj:.2f} fs, t0 = {ii*dt:.2f} ps,"\
-                #           f" EFG[{ii}]*EFG[{ii+jj}]")                
-                product = 0
-                product += Vxx[ii]*Vxx[ii+jj] 
-                product += Vyy[ii]*Vyy[ii+jj] 
-                product += Vzz[ii]*Vzz[ii+jj]
-                product += 2 * Vxy[ii]*Vxy[ii+jj]
-                product += 2 * Vyz[ii]*Vyz[ii+jj]
-                product += 2 * Vxz[ii]*Vxz[ii+jj]
-                acf_jj += product
-                                                
-            tau[jj] = tau_jj
-            promedio = acf_jj/(max_tau_index+1)
-            acf[jj] = promedio
-            
-                        
-            acf_data[:, run_ind, nn] = acf
-            
-            efg_squared = Vxx**2+Vyy**2+Vzz**2 + 2*(Vxy**2+Vyz**2+Vxz**2)
-            efg_variance[run_ind, nn] = np.mean(efg_squared)
+for run in runs:
     run_ind += 1
+    for efg_source in EFG_sources:
+        acf_data = np.zeros([Ntimes, Nruns, NLi])
+        filename = f"{path}/EFG_{efg_source}_{run}.dat"    
+        data = np.loadtxt(filename)
+        # data columns order:    
+        # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
+        # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
+        for nn in range(NLi): #uno para cada litio
+            # plt.plot(data[:,0], data[:,nn+1])
+            t = data[:,0]
+            Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
+            Vxy, Vyz, Vxz = data[:,4+nn*6], data[:,5+nn*6], data[:,6+nn*6]                                
+
+            # Calculo ACF
+            Ntau = t.size                               
+            tau = np.zeros([Ntau])
+            acf = np.zeros([Ntau])        
+            efg_squared = np.zeros([Ntau])        
+            dt = t[1]-t[0]
+            for jj in range(Ntau):    
+                tau_jj = jj*dt            
+                max_tau_index = t.size-jj            
+                # jj, t0, acf_ii = 0, 0, 0            
+                # while t0+tau<=times[-1]:
+                acf_jj = 0     
+                if jj%500==0:                       
+                    print(f"RUN {run_ind},  Li{nn+1},  tau = {tau_jj:.2f}")
+                for ii in range(0,max_tau_index):
+                    # if ii%100==0:
+                    #     print(f"tau = {tau_jj:.2f} fs, t0 = {ii*dt:.2f} ps,"\
+                    #           f" EFG[{ii}]*EFG[{ii+jj}]")                
+                    product = 0
+                    product += Vxx[ii]*Vxx[ii+jj] 
+                    product += Vyy[ii]*Vyy[ii+jj] 
+                    product += Vzz[ii]*Vzz[ii+jj]
+                    product += 2 * Vxy[ii]*Vxy[ii+jj]
+                    product += 2 * Vyz[ii]*Vyz[ii+jj]
+                    product += 2 * Vxz[ii]*Vxz[ii+jj]
+                    acf_jj += product
+                                                    
+                tau[jj] = tau_jj
+                promedio = acf_jj/(max_tau_index+1)
+                acf[jj] = promedio
+                
+                            
+                acf_data[:, run_ind, nn] = acf
+                
+                efg_squared = Vxx**2+Vyy**2+Vzz**2 + 2*(Vxy**2+Vyz**2+Vxz**2)
+                efg_variance[run_ind, nn] = np.mean(efg_squared)
+        if "sulfur" in efg_source:
+            acf_sulfur = 
+        
 #%%
 
 
