@@ -38,7 +38,7 @@ path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
 runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
-runs = [f"{t:.1f}_ps" for t in [8000]]
+runs = [f"{t:.1f}_ps" for t in [6000]]
 solvent = "DME"
 
 
@@ -245,12 +245,14 @@ for run in runs:
 # fig.savefig(f"{path}/Figuras/CorrelationTime.png")
 
 #%% FIGURA: Autocorrelaciones
-fignum = 2
-fig, ax = plt.subplots(num=fignum, figsize=(8, 6))
+minimo = np.min(acf_data)
+maximo = np.min(acf_data)
+
 colors = ['k', 'b', 'r', 'g']
 run_ind = -1
 for run in runs:    
     run_ind += 1    
+    fig, ax = plt.subplots(num=run_ind+1, figsize=(8, 6))
     ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])    
     ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)    
     ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
@@ -261,8 +263,6 @@ for run in runs:
                 #color=colors[run_ind], 
                 alpha=alpha)                        
     # ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
-
-      
 
     acf_promedio = np.mean(acf_data, axis=(1,2))
     # datos = np.array([tau, acf_promedio]).T
@@ -275,6 +275,7 @@ for run in runs:
     ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
     ax.yaxis.set_label_position("right")
     ax.yaxis.tick_right()
+    ax.set_yalim([-1.1*np.abs(minimo), 1.1*maximo])
     ax.legend()
     fig.suptitle(fr"{solvent}$-Li_2S_6$ EFG Autocorrelation Function", fontsize=22)
     fig.tight_layout()
@@ -282,12 +283,11 @@ for run in runs:
 
 
 #%% FIGURA: ACF cumulativos:
-fignum = 3
-fig, ax = plt.subplots(num=fignum, figsize=(8, 6))
 run_ind = -1
 cumulative_data = np.zeros_like(acf_data)
 for run in runs:
     run_ind += 1
+    fig, ax = plt.subplots(num=(run_ind)*100, figsize=(8, 6))
     ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)    
     ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
     for nn in range(4):
