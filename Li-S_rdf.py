@@ -8,11 +8,11 @@ from MDAnalysis.analysis.rdf import InterRDF
 import pandas as pd
 from Functions import *
 
-path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
+path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
-runs = [f"{t:.1f}_ps" for t in [0.5,1,1.5,2]]
-MDfiles = [f"HQ.{i}" for i in range(6,10)]
+runs = [f"{t*1000:.0f}_ps" for t in range(6,11)]
+MDfiles = [f"HQ.{i}" for i in range(6,11)]
 
 
 dt = 0.01 # ps (tiempo entre frames) ## parametro de la simulacion: automatizar.
@@ -74,6 +74,3 @@ for rdf in rdfs:
 #     suma+=rdf[1]
 # plt.figure(5454354354354)
 # plt.plot(rdfs[0][0], suma, 'o-')
-
-
-# %%

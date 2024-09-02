@@ -41,7 +41,7 @@ def get_Charges(species_list, path):
                         break
         # esto se basa en que el atomo y la carga son las columnas 4 y 6
         charges_df_species = pd.read_csv(f"{path}/{species}.charges", sep='\s+', header=None, skiprows=1)
-        charges_df_species[[]] =charges_df_species.iloc[:, 4:7:2].drop_duplicates()
+        charges_df_species = charges_df_species.iloc[:, 4:7:2].drop_duplicates()
         charges_df_species.columns =["AtomType", "Charge"]
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
     return charges_df    

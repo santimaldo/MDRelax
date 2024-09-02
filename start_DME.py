@@ -35,11 +35,12 @@ import MDAnalysis as mda
 import pandas as pd
 from Functions import *
 
-path = "/home/santi/MD/GromacsFiles/2024-08-15_DME_2nd-test/"
+path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
 species_list = ["Li", "S6", "DME_7CB8A2"]
 
-runs = [f"{t:.1f}_ps" for t in [0.5,1,1.5,2]]
-MDfiles = [f"HQ.{i}" for i in range(6,10)]
+# runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
+runs = [f"{t:.1f}_ps" for t in [7000]]
+MDfiles = [f"HQ.{i}" for i in range(6,11)]
 
 
 dt = 0.01 # ps (tiempo entre frames) ## parametro de la simulacion: automatizar.
@@ -50,13 +51,14 @@ Charges = get_Charges(species_list, path)
 for idx in range(len(MDfiles)):    
     run = runs[idx]
     filename = MDfiles[idx]    
-    # u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
-    u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.trr")
+    #u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
+    #u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.trr")
+    u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.xtc")
     box=u.dimensions
     center = box[0:3]/2
             
     # tiempo en ps
-    trajectory = u.trajectory[:10000:5]
+    trajectory = u.trajectory
     t = np.zeros(len(trajectory))
     
     EFG = []    
@@ -66,7 +68,7 @@ for idx in range(len(MDfiles)):
         print("++++++++++++++++++++++++++++++++++++++++++")                    
         n_frame = u.trajectory.frame        
         t[nn] = n_frame * dt
-        print(f"dataset {idx}, frame={n_frame}, time = {t[nn]:.2f} ps\n\n")                
+        print(f"dataset {idx+1}/{len(MDfiles)}, frame={n_frame}, time = {t[nn]:.2f} ps\n\n")                
 
         group_Li = u.select_atoms("name Li*")            
         EFG_t = []
@@ -85,19 +87,27 @@ for idx in range(len(MDfiles)):
                 # Redefine coordinates with respect to lithium:
                 group_newpositions = group.positions - Li_in_center            
                 # apply PBC to keep the atoms within a unit-cell-length to lithiu
-                group_Cl_newpositions = mda.lib.distances.apply_PBC(group_newpositions,
+                group_newpositions = mda.lib.distances.apply_PBC(group_newpositions,
                                                                     box=box,
                                                                     backend='openMP')                                            
-                r_distances = mda.lib.distances.distance_array(center, 
-                                                               group_newpositions)        
-                x_distances, y_distances, z_distances = (group_newpositions-center).T
+                
 
-                if 'li' in AtomType.lower():
-                     # Quito la distancia cero, i.e, entre la "autodistancia"
-                     x_distances = x_distances[x_distances!=0]
-                     y_distances = y_distances[y_distances!=0]
-                     z_distances = z_distances[z_distances!=0]
-                     r_distances = r_distances[r_distances!=0]
+                if 'li' not in AtomType.lower():
+                    r_distances = mda.lib.distances.distance_array(center, 
+                                                               group_newpositions)        
+                    x_distances, y_distances, z_distances = (group_newpositions-center).T                      
+                else:
+                    # Defino la distancia de otra forma, para poder quitar
+                    # la "autodistancia" del litio observado                    
+                    x_distances, y_distances, z_distances = (group_newpositions-center).T                     
+                    r_distances = np.sqrt(x_distances*x_distances+
+                                          y_distances*y_distances+
+                                          z_distances*z_distances)
+                    # Quito la distancia cero, i.e, entre la "autodistancia"
+                    x_distances = x_distances[r_distances!=0]
+                    y_distances = y_distances[r_distances!=0]
+                    z_distances = z_distances[r_distances!=0]
+                    r_distances = r_distances[r_distances!=0]
         
                 # Calculate EFG--------------------------------------------------------
                 EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
@@ -128,82 +138,70 @@ for idx in range(len(MDfiles)):
               r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
     filename = f"{path}/MDRelax/EFG_{run}.dat"
     np.savetxt(filename, data, header=header)
-    #----------------------------------------------------------
-    #Calculo el profucto de EFG a tiempo t y a tiempo 0
-    # t = t - t[0]
-    
-    # ACF = np.zeros([t.size, group_Li.n_atoms])
-    # for ii in range(group_Li.n_atoms):
-    #     efg_nLi = EFG[:,ii,:,:]    
-    #     ACF[:,ii] = np.sum(efg_nLi*efg_nLi[0,:,:], axis=(1,2))
-        
-    #     plt.figure(0)
-    #     plt.plot(t, ACF[:,ii]/ACF[0,ii],'o-', label = rf'$Li_{ii+1}$')
-    # plt.plot(t, np.mean(ACF, axis=1)/np.mean(ACF, axis=1)[0],'o-', label = r'mean')
-    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    # plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
-    # plt.gca().axhline(0, color='k', ls='--')
-    # plt.legend()
-    # plt.show()
+    del EFG
+    #----------------------------------------------------------    
     
     #---------------
     #Calculo el profucto de EFG a tiempo t y a tiempo 0,
     ### esta vez variando cual es el tiempo 0 (promedio en ensamble)
-    dtau = np.diff(t)[0]
-    efg = EFG
-    acf = np.zeros([t.size, group_Li.n_atoms])
-    Num_promedios = np.zeros(t.size)
-    for ii in range(t.size):    
-        tau = ii*dtau
-        jj, t0, acf_ii = 0, 0, 0
-        while t0+tau<=t[-1]:
-            print(f"tau = {tau} ps, t0 = {t0:.2f} ps, ---------{jj}")                
-            acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
-            jj+=1
-            t0 = jj*dtau
-        print(f"el promedio es dividir por {jj}")
-        acf[ii,:] = acf_ii/jj
-        Num_promedios[ii] = jj
-    #
-    plt.figure(44847)
-    plt.plot(t, Num_promedios,'k--')
-    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
     
-    plt.ylabel(r"Numero de promedios",
-               fontdict={'fontsize':16})
+    ### COMENTO ESTO PARA HACER UNA CORRIDA LARGA:
+
+    # dtau = np.diff(t)[0]
+    # efg = EFG
+    # acf = np.zeros([t.size, group_Li.n_atoms])
+    # Num_promedios = np.zeros(t.size)
+    # for ii in range(t.size):    
+    #     tau = ii*dtau
+    #     jj, t0, acf_ii = 0, 0, 0
+    #     while t0+tau<=t[-1]:
+    #         print(f"tau = {tau} ps, t0 = {t0:.2f} ps, ---------{jj}")                
+    #         acf_ii += np.sum(efg[ii,:,:,:]*efg[ii+jj,:,:,:], axis=(1,2))
+    #         jj+=1
+    #         t0 = jj*dtau
+    #     print(f"el promedio es dividir por {jj}")
+    #     acf[ii,:] = acf_ii/jj
+    #     Num_promedios[ii] = jj
+    # #
+    # plt.figure(44847)
+    # plt.plot(t, Num_promedios,'k--')
+    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
     
-    plt.figure(44848)
-    for jj in range(group_Li.n_atoms):        
-        # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
-                 # label=f'Li {jj+1}, Sin promediar')   
-        plt.plot(t, acf[:,jj], 'o-', 
-                 label=rf'$Li_{jj+1}$')
+    # plt.ylabel(r"Numero de promedios",
+    #            fontdict={'fontsize':16})
+    
+    # plt.figure(44848)
+    # for jj in range(group_Li.n_atoms):        
+    #     # plt.plot(t, ACF[:,jj]/ACF[0,jj], 'o--', 
+    #              # label=f'Li {jj+1}, Sin promediar')   
+    #     plt.plot(t, acf[:,jj], 'o-', 
+    #              label=rf'$Li_{jj+1}$')
             
-    plt.plot(t, np.mean(acf, axis=1),'o-', 
-             label = r'mean')
+    # plt.plot(t, np.mean(acf, axis=1),'o-', 
+    #          label = r'mean')
     
-    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
     
-    plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
-               fontdict={'fontsize':16})
+    # plt.ylabel(r"$\langle\ EFG(t)\cdot EFG(0)\ \rangle_t$",
+    #            fontdict={'fontsize':16})
     
-    plt.xlim([0,t[-1]*0.5])
-    plt.gca().axhline(0, color='k', ls='--')
+    # plt.xlim([0,t[-1]*0.5])
+    # plt.gca().axhline(0, color='k', ls='--')
+    # # plt.gca().axhline(1, color='k', ls='--')
+    # plt.tight_layout()
+    # plt.legend(loc='center right')
+    # plt.savefig(f"{path}/MDRelax/ACF_{run}.png")
+    # plt.show()
+    
+    # #
+    # plt.figure(44849)
+    # plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
+    #          label = r'Promedio entre atomos de Li y en $<>_t$')
+    # plt.xlabel("Time [ps]", fontdict={'fontsize':16})
+    # plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
+    # plt.gca().axhline(0, color='k', ls='--')
     # plt.gca().axhline(1, color='k', ls='--')
-    plt.tight_layout()
-    plt.legend(loc='center right')
-    plt.savefig(f"{path}/MDRelax/ACF.png")
-    plt.show()
-    
-    #
-    plt.figure(44849)
-    plt.plot(t, np.mean(acf, axis=1)/np.mean(acf, axis=1)[0],'o-', color='green', 
-             label = r'Promedio entre atomos de Li y en $<>_t$')
-    plt.xlabel("Time [ps]", fontdict={'fontsize':16})
-    plt.ylabel("Autocorrelation Function", fontdict={'fontsize':16})
-    plt.gca().axhline(0, color='k', ls='--')
-    plt.gca().axhline(1, color='k', ls='--')
-    plt.tight_layout()
-    plt.legend()
-    plt.savefig(f"{path}/MDRelax/ACFnorm.png")
-    plt.show()    
+    # plt.tight_layout()
+    # plt.legend()
+    # plt.savefig(f"{path}/MDRelax/ACFnorm_{run}.png")
+    # plt.show()    

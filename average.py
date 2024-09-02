@@ -33,36 +33,34 @@ def cumulative_simpson(ydata, x=None, initial=0):
     
 
 #%%
-frame_times = ["500ps", "1ns"]
-runs = ["frames_HQ_1", "frames_HQ_2"]
 
-# frame_times = ["500ps"]
-# runs = ["frames_HQ_1"]
+path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+species_list = ["Li", "S6", "DME_7CB8A2"]
+
+runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
+runs = [f"{t:.1f}_ps" for t in [7000]]
 solvent = "DME"
 
-path = f"../DATA/2023-12_{solvent}/results/"
 
 # Number of time steps
-Ntimes = 3001
+Ntimes = 10001
 # Number of runs
-Nruns = len(frame_times)*len(runs)
+Nruns = len(runs)
 # Number of Li ions in a run 
-NLi = 2
+NLi = 4
 
 
 acf_data = np.zeros([Ntimes, Nruns, NLi])
 efg_variance = np.zeros([Nruns, NLi])
 run_ind = 0
 # Loop sobre runs para calcular ACF
-for frame_time in frame_times:
-  for run in runs:
-    
-    filename = f"{path}/EFG_{frame_time}_{run}.dat"    
+for run in runs:      
+    filename = f"{path}/EFG_{run}.dat"    
     data = np.loadtxt(filename)
     # data columns order:    
     # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
     # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
-    for nn in range(2): # 2, uno para cada litio
+    for nn in range(NLi): #uno para cada litio
         # plt.plot(data[:,0], data[:,nn+1])
         t = data[:,0]
         Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
@@ -73,13 +71,13 @@ for frame_time in frame_times:
         plt.plot(t, Vxx+Vyy+Vzz, 'k', label='Trace')                
         plt.legend(["Vxx", "Vyy", "Vzz", "Vxy", "Vyz", "Vxz", "Trace: Vxx+Vyy+Vzz"],
                     ncols=4, fontsize=10)
-        plt.title(f"{solvent};   run:{frame_time},{run};   Li{nn+1}")
+        plt.title(f"{solvent};   run:{run};   Li{nn+1}")
         plt.xlabel("Time [ps]")
         plt.ylabel(r"EFG [$e/\AA^3$]")
         plt.tight_layout()
-        plt.savefig(f"{path}/Figuras/EFG_{frame_time}_{run}_Li{nn+1}.png")
+        plt.savefig(f"{path}Figuras/EFG_{run}_Li{nn+1}.png")
         plt.close()
-    
+
         # Calculo ACF
         Ntau = t.size                               
         tau = np.zeros([Ntau])
@@ -119,44 +117,156 @@ for frame_time in frame_times:
     run_ind += 1
 #%%
 
+
 # graficos:
+# fignum = 2
+# fig = plt.figure(num=fignum, figsize=(12, 8))
+# colors = ['k', 'b', 'r', 'g']
+# run_ind = -1
+# for frame_time in frame_times:
+#   ii+=1
+#   for run in runs:
+#       jj+=1
+#       run_ind += 1
+#       jjcond = jj
+#       if ii>0:
+#           jjcond = jj-2
+#       ax = plt.subplot2grid((int(Nruns/2),Nruns), (ii, jjcond))
+#       ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])
+#       if jj%2==1:
+#           ax.yaxis.set_ticklabels([])
+#       else:
+#           ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
+      
+#       ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+#       for nn in range(2): # 2, uno para cada litio
+#         acf = acf_data[:,run_ind, nn]
+#         alpha = 1        
+#         if nn>0: alpha=0.5
+#         ax.plot(tau, acf, label=f"Li{nn+1}", lw=2,
+#                  color=colors[run_ind], alpha=alpha)                    
+#       ax.axhline(0, color='k', ls='--')
+#       ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
+
+      
+# ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
+#                       rowspan=int(Nruns/2),colspan=int(Nruns/2))
+
+# acf_promedio = np.mean(acf_data, axis=(1,2))
+# datos = np.array([tau, acf_promedio]).T
+# np.savetxt(f"{path}/ACF-mean.dat", datos)
+
+# label = "Mean ACF"
+# ax.plot(tau, acf_promedio, color='orange', label=label, lw=3)        
+# ax.axhline(0, color='k', ls='--')
+# ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
+# ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+# ax.yaxis.set_label_position("right")
+# ax.yaxis.tick_right()
+# ax.legend()
+# fig.suptitle(fr"{solvent}$-Li_2S_6$ EFG Autocorrelation Function", fontsize=22)
+# fig.tight_layout()
+# fig.savefig(f"{path}/Figuras/ACF.png")
+
+# #%%
+# # graficos:
+# fignum = 3
+# fig = plt.figure(num=fignum, figsize=(12, 8))
+# colors = ['k', 'b', 'r', 'g']
+# run_ind = -1
+# ii, jj = -1,-1
+
+# cumulative_data = np.zeros_like(acf_data)
+# for frame_time in frame_times:
+#   ii+=1
+#   for run in runs:
+#       jj+=1
+#       run_ind += 1
+#       jjcond = jj
+#       if ii>0:
+#           jjcond = jj-2
+#       ax = plt.subplot2grid((int(Nruns/2),Nruns), (ii, jjcond))
+#       # ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])
+#       if jj%2==1:
+#           ax.yaxis.set_ticklabels([])
+#       else:
+#           ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
+      
+#       ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+#       for nn in range(2): # 2, uno para cada litio
+#         acf = acf_data[:,run_ind, nn]
+#         alpha = 1        
+#         if nn>0: alpha=0.5
+        
+#         # integral = cumulative_trapezoid(acf, x=tau, initial=0)
+#         integral = cumulative_simpson(acf, x=tau, initial=0)
+#         cumulative = integral/efg_variance[run_ind, nn] 
+#         ax.plot(tau, cumulative, label=f"Li{nn+1}", lw=2,
+#                  color=colors[run_ind], alpha=alpha)           
+#         # guardo los datos para luego promediar
+#         cumulative_data[:, run_ind, nn] = cumulative
+#       ax.axhline(0, color='k', ls='--')
+#       ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")      
+      
+      
+# ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
+#                       rowspan=int(Nruns/2),colspan=int(Nruns/2))     
+# # Primero promedio y luego integro:
+# acf_promedio= np.mean(acf_data, axis=(1,2))
+# integral = cumulative_simpson(acf_promedio, x=tau, initial=0)
+# cumulative_promedio = integral/np.mean(efg_variance)
+# # guardo datos
+# datos = np.array([tau, cumulative_promedio]).T
+# np.savetxt(f"{path}/Cumulative-mean.dat", datos)
+# # grafico
+# label = "Cumulative of ACF mean"
+# ax.plot(tau, cumulative_promedio, label=label, lw=3, color='orange') 
+
+# # calculo el promedio de las cumulativas:
+# # promedio_de_cumulatives = np.mean(cumulative_data, axis=(1,2))
+# # label = "Mean of Cumulatives"
+# # ax.plot(tau, promedio_de_cumulatives, '--', color='gray', label=label, lw=2) 
+
+       
+# ax.axhline(0, color='k', ls='--')
+# ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
+# ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+# ax.yaxis.set_label_position("right")
+# ax.yaxis.tick_right()
+# ax.legend()
+# title = f"{solvent}"\
+#         r"$-Li_2S_6$"+"\n"\
+#         r" Cumulative Integral of ACF:   "\
+#         r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
+#         r"$\langle\sum_{\alpha\beta}V_{\alpha\beta}(0)$"\
+#         r"$V_{\alpha\beta}\rangle(t') dt'$"
+# fig.suptitle(title, fontsize=18)
+# fig.tight_layout()
+# fig.savefig(f"{path}/Figuras/CorrelationTime.png")
+
+#%% FIGURA: Autocorrelaciones
 fignum = 2
-fig = plt.figure(num=fignum, figsize=(12, 8))
+fig, ax = plt.subplots(num=fignum, figsize=(12, 8))
 colors = ['k', 'b', 'r', 'g']
 run_ind = -1
-ii, jj = -1,-1
-for frame_time in frame_times:
-  ii+=1
-  for run in runs:
-      jj+=1
-      run_ind += 1
-      jjcond = jj
-      if ii>0:
-          jjcond = jj-2
-      ax = plt.subplot2grid((int(Nruns/2),Nruns), (ii, jjcond))
-      ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])
-      if jj%2==1:
-          ax.yaxis.set_ticklabels([])
-      else:
-          ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
-      
-      ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
-      for nn in range(2): # 2, uno para cada litio
+for run in runs:    
+    run_ind += 1    
+    ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])    
+    ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)    
+    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+    for nn in range(4): # 2, uno para cada litio
         acf = acf_data[:,run_ind, nn]
-        alpha = 1        
-        if nn>0: alpha=0.5
+        alpha=0.5
         ax.plot(tau, acf, label=f"Li{nn+1}", lw=2,
-                 color=colors[run_ind], alpha=alpha)                    
-      ax.axhline(0, color='k', ls='--')
-      ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
+                color=colors[run_ind], alpha=alpha)                    
+    ax.axhline(0, color='k', ls='--')
+    # ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")
 
       
-ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
-                      rowspan=int(Nruns/2),colspan=int(Nruns/2))
 
 acf_promedio = np.mean(acf_data, axis=(1,2))
-datos = np.array([tau, acf_promedio]).T
-np.savetxt(f"{path}/ACF-mean.dat", datos)
+# datos = np.array([tau, acf_promedio]).T
+# np.savetxt(f"{path}/ACF-mean.dat", datos)
 
 label = "Mean ACF"
 ax.plot(tau, acf_promedio, color='orange', label=label, lw=3)        
@@ -168,68 +278,45 @@ ax.yaxis.tick_right()
 ax.legend()
 fig.suptitle(fr"{solvent}$-Li_2S_6$ EFG Autocorrelation Function", fontsize=22)
 fig.tight_layout()
-fig.savefig(f"{path}/Figuras/ACF.png")
 
-#%%
-# graficos:
+ax.set_ylim([0, 0.02])
+
+#%% FIGURA: ACF cumulativos:
 fignum = 3
-fig = plt.figure(num=fignum, figsize=(12, 8))
-colors = ['k', 'b', 'r', 'g']
+fig, ax = plt.subplots(num=fignum, figsize=(12, 8))
 run_ind = -1
-ii, jj = -1,-1
-
 cumulative_data = np.zeros_like(acf_data)
-for frame_time in frame_times:
-  ii+=1
-  for run in runs:
-      jj+=1
-      run_ind += 1
-      jjcond = jj
-      if ii>0:
-          jjcond = jj-2
-      ax = plt.subplot2grid((int(Nruns/2),Nruns), (ii, jjcond))
-      # ax.set_ylim([1.1*np.min(acf_data), 1.1*np.max(acf_data)])
-      if jj%2==1:
-          ax.yaxis.set_ticklabels([])
-      else:
-          ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
-      
-      ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
-      for nn in range(2): # 2, uno para cada litio
+for run in runs:
+    run_ind += 1
+    ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)    
+    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+    for nn in range(4):
         acf = acf_data[:,run_ind, nn]
-        alpha = 1        
-        if nn>0: alpha=0.5
-        
+        alpha=0.5
+    
         # integral = cumulative_trapezoid(acf, x=tau, initial=0)
         integral = cumulative_simpson(acf, x=tau, initial=0)
         cumulative = integral/efg_variance[run_ind, nn] 
         ax.plot(tau, cumulative, label=f"Li{nn+1}", lw=2,
-                 color=colors[run_ind], alpha=alpha)           
+                    color=colors[run_ind], alpha=alpha)           
         # guardo los datos para luego promediar
         cumulative_data[:, run_ind, nn] = cumulative
-      ax.axhline(0, color='k', ls='--')
-      ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")      
-      
-      
-ax = plt.subplot2grid((int(Nruns/2),Nruns), (0,int(Nruns/2)),
-                      rowspan=int(Nruns/2),colspan=int(Nruns/2))     
+    ax.axhline(0, color='k', ls='--')
+    ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")      
 # Primero promedio y luego integro:
 acf_promedio= np.mean(acf_data, axis=(1,2))
 integral = cumulative_simpson(acf_promedio, x=tau, initial=0)
 cumulative_promedio = integral/np.mean(efg_variance)
 # guardo datos
-datos = np.array([tau, cumulative_promedio]).T
-np.savetxt(f"{path}/Cumulative-mean.dat", datos)
+# datos = np.array([tau, cumulative_promedio]).T
+# np.savetxt(f"{path}/Cumulative-mean.dat", datos)
 # grafico
 label = "Cumulative of ACF mean"
 ax.plot(tau, cumulative_promedio, label=label, lw=3, color='orange') 
-
 # calculo el promedio de las cumulativas:
 # promedio_de_cumulatives = np.mean(cumulative_data, axis=(1,2))
 # label = "Mean of Cumulatives"
-# ax.plot(tau, promedio_de_cumulatives, '--', color='gray', label=label, lw=2) 
-
-       
+# ax.plot(tau, promedio_de_cumulatives, '--', color='gray', label=label, lw=2)      
 ax.axhline(0, color='k', ls='--')
 ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
@@ -244,4 +331,9 @@ title = f"{solvent}"\
         r"$V_{\alpha\beta}\rangle(t') dt'$"
 fig.suptitle(title, fontsize=18)
 fig.tight_layout()
-fig.savefig(f"{path}/Figuras/CorrelationTime.png")
+# fig.savefig(f"{path}/Figuras/CorrelationTime.png")
+
+corr_time = np.mean(cumulative_promedio[-int(0.4*cumulative_promedio.size):])
+ax.axhline(corr_time, ls='--', color='k', label=f"correlation time: {corr_time:.2f} ps")
+
+# %%
