@@ -9,7 +9,7 @@ read ACF functions and average
 
 
 
-COMPLETARRRRRRRRRRRR
+
 
 """
 
@@ -40,16 +40,23 @@ def cumulative_simpson(ydata, x=None, initial=0):
 
 #%%
 
-path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
-species_list = ["Li", "S6", "DME_7CB8A2"]
-savepath = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+# species_list = ["Li", "S6", "DME_7CB8A2"]
+# savepath = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+# runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
+# solvent = "DME"
 
+path = "/home/santi/MD/MDRelax_results/TEGDME/"
+savepath=path
 runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
-solvent = "DME"
+solvent = "TEGDME"
+
+print("WARNING!! revisar el dt, esta multiplicado por 5")
+
 
 NPS = 2 # numero de polisulfuros
 # Number of time steps
-Ntimes = 10001
+Ntimes = 50001
 # Number of runs
 Nruns = len(runs)
 # Number of Li ions in a run 
@@ -75,7 +82,7 @@ for run in runs:
         t0 = time.time()
         for nn in range(NLi): #uno para cada litio
             # plt.plot(data[:,0], data[:,nn+1])
-            t = data[:,0]
+            t = data[:,0]*5
             Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
             Vxy, Vyz, Vxz = data[:,4+nn*6], data[:,5+nn*6], data[:,6+nn*6]                                            
             EFG = np.array([[Vxx, Vxy, Vxz],

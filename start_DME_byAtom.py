@@ -6,6 +6,10 @@ Created on Thu Nov  2 16:33:25 2023
 @author: santi
 
 First script to test the EFG summation
+
+
+TO DO LIST:
+hacer que obtenga el tiempo de la simulacion
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,8 +17,13 @@ import MDAnalysis as mda
 import pandas as pd
 from Functions import *
 
-path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
-species_list = ["Li", "S6", "DME_7CB8A2"]
+# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
+# savepath = path
+# species_list = ["Li", "S6", "DME_7CB8A2"]
+
+path = "/home/santi/mendieta/TEGDME/"
+savepath = "/home/santi/MD/MDRelax_results/TEGDME/"
+species_list = ["Li", "S6", "tegdme"]
 
 runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
 MDfiles = [f"HQ.{i}" for i in range(6,11)]
@@ -28,9 +37,9 @@ Charges = get_Charges(species_list, path)
 for idx in range(len(MDfiles)):    
     run = runs[idx]
     filename = MDfiles[idx]    
-    #u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
+    u = mda.Universe(f"{path}{filename}.tpr", f"{path}{filename}.trr")
     #u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.trr")
-    u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.xtc")
+    # u = mda.Universe(f"{path}{filename}.gro", f"{path}{filename}.xtc")
     box=u.dimensions
     center = box[0:3]/2
             
@@ -109,7 +118,7 @@ for idx in range(len(MDfiles)):
         data = np.array(data).T    
         header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
                 r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
-        filename = f"{path}/MDRelax/EFG_{efg_source}_{run}.dat"
+        filename = f"{savepath}/EFG_{efg_source}_{run}.dat"
         np.savetxt(filename, data, header=header)
     del EFG_sulfur, EFG_solvent
     #----------------------------------------------------------    
