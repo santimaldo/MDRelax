@@ -282,8 +282,6 @@ for run in runs:
 acf_mean = np.mean(acf_means, axis=1)
 ax.plot(tau, acf_mean, label=f"Mean over runs", lw=3, color='k')
 
-efg_variance_mean_over_cations[run_ind] = np.mean(efg_variance[run_ind, :])                            
-
 ax.axhline(0, color='k', ls='--')
 ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
@@ -307,7 +305,7 @@ for run in runs:
 # compute the mean over runs:            
 ######## ACA NO SE SI POMEDIAR LA VARIANZA ANTES O DESPUES DE INTEGRAR
 data = acf_mean # mean over runs
-efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations[run_ind])
+efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations)
 integral = cumulative_simpson(data, x=tau, initial=0)
 cumulative = integral/efg_variance_mean_over_runs
 ax.plot(tau, cumulative, label="Mean over runs", lw=3, color="k") 
@@ -324,7 +322,7 @@ fig.suptitle(title, fontsize=12)
 fig.tight_layout()
 
 corr_time_range = np.array([0.4, 0.8])*cumulative.size
-corr_time = np.mean(cumulative[int(corr_time_range[0]):int(corr_time_range[0])])
+corr_time = np.mean(cumulative[int(corr_time_range[0]):int(corr_time_range[1])])
 ax.hlines(corr_time, 
          tau[int(corr_time_range[0])],
          tau[int(corr_time_range[1])], 
