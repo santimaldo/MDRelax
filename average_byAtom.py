@@ -18,6 +18,7 @@ import numpy as np
 from scipy.signal import savgol_filter
 from scipy.integrate import cumulative_trapezoid, simpson
 import time
+from Functions import *
 plt.rcParams.update({'font.size': 12})
 
 #%%
@@ -58,8 +59,10 @@ runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 # print("WARNING!! revisar el dt, esta multiplicado por 5")
 
 
+
+
 # Number of time steps
-Ntimes = 10001
+Ntimes = get_Ntimes(f"{path}EFG_{cation}_{runs[0]}.dat")
 # Number of runs
 Nruns = len(runs)
 # Number of Li ions in a run 
@@ -76,7 +79,7 @@ run_ind = -1
 # Loop sobre runs para calcular ACF
 for run in runs:
     print(f"RUN: {run} "+"="*30)
-    run_ind += 1    
+    run_ind += 1
     efg_cation_variance = np.zeros(Ncations)
     efg_anion_variance = np.zeros(Ncations)
     efg_solvent_variance = np.zeros(Ncations)

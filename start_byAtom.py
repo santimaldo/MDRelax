@@ -7,9 +7,6 @@ Created on Thu Nov  2 16:33:25 2023
 
 First script to test the EFG summation
 
-
-TO DO LIST:
-hacer que obtenga el tiempo de la simulacion
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +20,7 @@ cation, anion, solvent = ["Li","S6", "DME_7CB8A2"] # as in .itp files
 solvent_hr = "DME"
 
 runs_inds = range(6,11)
-runs_inds = range(7,8)
+mdp_file = "HQ"
 MDfiles = [f"HQ.{i}" for i in runs_inds]
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
@@ -40,8 +37,7 @@ topology_format = ".gro" # ".tpr" or ".gro"
 
 
 Ncations = 4 # numero de Li+
-dt = 0.01 # ps (tiempo entre frames) ## parametro de la simulacion: automatizar.
-
+dt = get_dt(mdp_file=f"{path}{mdp_file}.mdp")
 Charges = get_Charges([cation, anion, solvent], path)
 
 # loop over different runs
@@ -52,16 +48,15 @@ for idx in range(len(MDfiles)):
     box=u.dimensions
     center = box[0:3]/2
             
-    # tiempo en ps
-    trajectory = u.trajectory        
-    t = np.arange(len(trajectory))*dt
+    # tiempo en ps    
+    t = np.arange(len(u.trajectory))*dt
     # Arreglo EFG:
     # EFG.shape --> (NtimeSteps, Ncations, 3, 3)        
-    EFG_anion = np.zeros([len(trajectory), Ncations, 3, 3])    
-    EFG_cation = np.zeros([len(trajectory), Ncations, 3, 3])    
-    EFG_solvent = np.zeros([len(trajectory), Ncations, 3, 3])    
+    EFG_anion = np.zeros([len(u.trajectory), Ncations, 3, 3])    
+    EFG_cation = np.zeros([len(u.trajectory), Ncations, 3, 3])    
+    EFG_solvent = np.zeros([len(u.trajectory), Ncations, 3, 3])    
     nn = -1
-    for timestep in trajectory:
+    for timestep in u.trajectory:
         nn+=1         
         n_frame = u.trajectory.frame
         if nn%100==0:                

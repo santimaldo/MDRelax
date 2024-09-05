@@ -46,7 +46,49 @@ def get_Charges(species_list, path):
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
     return charges_df    
 
-        
+
+def get_dt(mdp_file):
+    """    
+    get time-step between frames from the .mdp file
+    Parameters
+    ----------
+    mdp_file : str   e.g:  '/home/MD/HQ.mdp'
+
+    Returns
+    -------
+    dt : float   -  dt in ps = 1e-12 s
+    """            
+    with open(mdp_file, "r") as f:        
+        for ii in range(1000):
+            line = f.readline()             
+            if "nstxout" in line:
+                try:
+                    dt = float(line.split()[2])
+                except:
+                    msg = f"Could not get dt from 'nstxout' in {mdp_file}"
+                    raise Warnint(msg)
+                break
+        if ii>=999:
+            msg = f"Is 'nstxout' in {mdp_file}?"
+            raise Warnint(msg)
+    return dt
+
+
+def get_Ntimes(EFG_file):
+    """    
+    get number of time-steps of an EFG file
+    Parameters
+    ----------
+    EFG_file : str   e.g:  '/home/MD/MDRelax_results/EFG_Li_6000_ps.dat'
+
+    Returns
+    -------
+    Ntimes : int   -  Number of EFG time-steps
+    """            
+    data = np.loadtxt(EFG_file)
+    Ntimes = data.shape[0]
+    return Ntimes
+
 def calculate_EFG(q, r, x, y, z):
     """
     Calculate de EFG based on charge points.
