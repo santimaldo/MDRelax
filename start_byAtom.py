@@ -23,6 +23,7 @@ cation, anion, solvent = ["Li","S6", "DME_7CB8A2"] # as in .itp files
 solvent_hr = "DME"
 
 runs_inds = range(6,11)
+runs_inds = range(7,8)
 MDfiles = [f"HQ.{i}" for i in runs_inds]
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
@@ -61,10 +62,10 @@ for idx in range(len(MDfiles)):
     EFG_solvent = np.zeros([len(trajectory), Ncations, 3, 3])    
     nn = -1
     for timestep in trajectory:
-        nn+=1 
-        print("++++++++++++++++++++++++++++++++++++++++++")                    
+        nn+=1         
         n_frame = u.trajectory.frame
-        if nn%100:                
+        if nn%100==0:                
+            print("++++++++++++++++++++++++++++++++++++++++++")
             print(f"dataset {idx+1}/{len(MDfiles)}, frame={n_frame}, time = {t[nn]:.2f} ps\n\n")                
 
         cations_group = u.select_atoms(f"name {cation}*")
@@ -94,14 +95,24 @@ for idx in range(len(MDfiles)):
                                                                group_newpositions_pbc,
                                                                backend='openMP')[0,:]
                 x_distances, y_distances, z_distances = (group_newpositions_pbc-center).T
-
+                
                 if cation in AtomType:    
                     # Quito la distancia cero, i.e, entre la "autodistancia"
-                    x_distances = x_distances[r_distances!=0]
-                    y_distances = y_distances[r_distances!=0]
-                    z_distances = z_distances[r_distances!=0]
-                    r_distances = r_distances[r_distances!=0]
+                    # correccion:
+                    #    Cambio:
+                    #       x_distances = x_distances[r_distances!=0]
+                    #    por:
+                    #       x_distances = x_distances[r_distance > 1e-5]
+                    # De esta manera, me quito de encima numeros que son
+                    # distintos de 0 por error numerico
+                    x_distances = x_distances[r_distances>1e-5]
+                    y_distances = y_distances[r_distances>1e-5]
+                    z_distances = z_distances[r_distances>1e-5]
+                    r_distances = r_distances[r_distances>1e-5]
             
+                if (r_distances<1).any():
+                    msg = f"hay un {AtomType} a menos de 1 A del {cation}_{cation_index}"
+                    raise Warning(msg)
                 # Calculate EFG
                 EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
                                         y_distances, z_distances)

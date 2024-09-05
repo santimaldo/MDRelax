@@ -46,6 +46,7 @@ savepath = path
 salt = r"$Li_2S_6$"
 
 runs_inds = range(6, 11)
+runs_inds = range(7, 8)
 MDfiles = [f"HQ.{i}" for i in runs_inds]
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
@@ -74,13 +75,15 @@ efg_variance_mean_over_cations=np.zeros([Nruns])
 run_ind = -1
 # Loop sobre runs para calcular ACF
 for run in runs:
-    print(f"RUN: {run} ==================")
+    print(f"RUN: {run} "+"="*30)
     run_ind += 1    
     efg_cation_variance = np.zeros(Ncations)
     efg_anion_variance = np.zeros(Ncations)
-    efg_solvent_variance = np.zeros(Ncations)    
+    efg_solvent_variance = np.zeros(Ncations)
+    efg_source_index = -1
     for efg_source in efg_sources: 
-        filename = f"{path}/EFG_{efg_source}_{run}.dat"    
+        efg_source_index += 1
+        filename = f"{path}/EFG_{efg_source}_{run}.dat"
         data = np.loadtxt(filename)[:Ntimes, :]        
         # data columns order:    
         # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
@@ -121,7 +124,11 @@ for run in runs:
                 promedio = acf_jj/(max_tau_index+1)
                 acf[jj] = promedio                                                           
                 if jj%1000==0:                     
-                    print(f"   {cation} {nn+1}/{Ncations}:   t = {t[jj]:.2f} ps")
+                    msg = f"{cation} {nn+1}/{Ncations}."+"\t"+\
+                          f"EFG-source: {efg_source} "+\
+                          f"({efg_source_index+1}/{len(efg_sources)})."+"\t"+\
+                          f"t = {t[jj]:.2f} ps"
+                    print(msg)
                 elif jj==Ntau-1:                     
                     print(f"   {cation} {nn+1}/{Ncations}:  ready")
             #-------------------------------------------
@@ -143,6 +150,8 @@ for run in runs:
                                efg_solvent_variance
 
     #===================================================================    
+    #FIGURA: ACF:  -----------------------
+
     fig, ax = plt.subplots(num=run_ind+1)
     fig_cation, ax_cation = plt.subplots(num=(run_ind+1)*10)
     fig_anion, ax_anion = plt.subplots(num=(run_ind+1)*100)
@@ -157,7 +166,7 @@ for run in runs:
                         label=f"{cation}{nn+1}", lw=2, alpha=0.5)        
 
     # promedio sobre cationes:
-    acf_cation_promedio = np.mean(acf_anion[:,run_ind, :], axis=1)
+    acf_cation_promedio = np.mean(acf_cation[:,run_ind, :], axis=1)
     acf_anion_promedio = np.mean(acf_anion[:,run_ind, :], axis=1)
     acf_solvent_promedio = np.mean(acf_solvent[:,run_ind, :], axis=1)
     acf_means[:, run_ind] = acf_cation_promedio+\
@@ -171,7 +180,7 @@ for run in runs:
     ax_anion.plot(tau, acf_anion_promedio, label=f"Mean", 
                   lw=3, color='blue')    
     ax_solvent.plot(tau, acf_solvent_promedio, label=f"Mean", 
-                    lw=3, color='grey')
+                    lw=3, color='dimgrey')
     # plot all efg-sources in a single graph
     ax.plot(tau, acf_means[:, run_ind],
             color='k', lw=3, label='Total ACF')
@@ -189,15 +198,19 @@ for run in runs:
         ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
         ax_i.legend()
         fig_i.suptitle(fr"{solvent_hr}$-Li_2S_6$ EFG Autocorrelation Function."+"\n"+\
-                        f"EFG source: {source}", fontsize=16)
+                        f"EFG source: {source}"+"\n"+\
+                        f"run: {run}",
+                        fontsize=16)
         fig_i.tight_layout()
         fig_i.savefig(f"{savepath}/Figuras/ACF_{run}_{source}.png")
 
     # guardo autocorrelaciones promedio
     data = np.array([tau, 
-                    acf_anion_promedio+acf_solvent_promedio,
-                    acf_anion_promedio, acf_solvent_promedio]).T
-    header = "tau\tACF_total\tACF_sulfur\tACF_solvent\n"\
+                    acf_means[:, run_ind],
+                    acf_cation_promedio,
+                    acf_anion_promedio, 
+                    acf_solvent_promedio]).T
+    header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent_hr}\n"\
              "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
     np.savetxt(f"{savepath}/ACF_{run}.dat", data, header=header)
     
@@ -209,7 +222,7 @@ for run in runs:
 
 
     #FIGURA: ACF cumulativos:  -----------------------
-    fig, ax = plt.subplots(num=(run_ind+1)*1000)
+    fig, ax = plt.subplots(num=(run_ind+1)*10000)
     
     data = acf_cation_promedio
     integral = cumulative_simpson(data, x=tau, initial=0)    
@@ -242,7 +255,8 @@ for run in runs:
             r" Cumulative Integral of ACF:   "\
             r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
             r"$\langle\sum_{\alpha\beta}V_{\alpha\beta}(0)$"\
-            r"$V_{\alpha\beta}(t')\rangle dt'$"
+            r"$V_{\alpha\beta}(t')\rangle dt'$"+"\n"+\
+            f"run: {run}"
     fig.suptitle(title, fontsize=12)
     fig.tight_layout()
 
