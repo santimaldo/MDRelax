@@ -1,0 +1,356 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec  5 12:00:58 2023
+
+@author: santi
+
+read ACF functions and average
+
+
+
+
+
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import savgol_filter
+from scipy.integrate import cumulative_trapezoid, simpson
+import time
+from Functions import *
+plt.rcParams.update({'font.size': 12})
+
+#%%
+def cumulative_simpson(ydata, x=None, initial=0):
+    """
+    Compute cumulative integra with simpson's rule
+    ydata must be a 1D array
+    """
+    # inicializo    
+    if x is None: x=np.arange(ydata.size)        
+    integral = np.zeros_like(ydata)
+    integral[0] = initial
+    for nf in range(1, ydata.size):         
+        ytmp, xtmp = ydata[:nf+1], x[:nf+1]    
+        integral[nf] = simpson(ytmp, x=xtmp)    
+    return integral
+        
+    
+    
+
+#%%
+
+# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+# cation, anion, solvent = ["Li", "S6", "DME"] # hr stands for "human readable"
+# savepath = path
+# salt = r"$Li_2S_6$"
+
+# runs_inds = range(6, 11)
+# MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
+# DME - LiTFSI
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+savepath = path_MDrelax + "test"
+cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","TFS", "DME"] # names
+runs_inds = range(6,11)
+mdp_file = "HQ"
+runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
+# Number of time steps
+Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")
+# Number of runs
+Nruns = len(runs)
+# Number of Li ions in a run 
+Ncations = 4
+
+
+t0 = time.time()
+efg_sources = [cation, anion, solvent]
+EFG_cation = np.zeros([3,3, Ntimes, Nruns, Ncations])
+EFG_anion = np.zeros([3,3, Ntimes, Nruns, Ncations])
+EFG_solvent = np.zeros([3,3, Ntimes, Nruns, Ncations])
+acf_cation = np.zeros([Ntimes, Nruns, Ncations])
+acf_anion = np.zeros([Ntimes, Nruns, Ncations])
+acf_solvent = np.zeros([Ntimes, Nruns, Ncations])
+efg_variance = np.zeros([Nruns, Ncations])
+acf_means = np.zeros([Ntimes, Nruns])
+efg_variance_mean_over_cations=np.zeros([Nruns])
+run_ind = -1
+print("Reading files...")
+# Loop sobre runs para calcular ACF
+for run in runs:
+    print(f"RUN: {run} "+"="*30)
+    run_ind += 1
+    efg_cation_variance = np.zeros(Ncations)
+    efg_anion_variance = np.zeros(Ncations)
+    efg_solvent_variance = np.zeros(Ncations)
+    efg_source_index = -1
+    for efg_source in efg_sources: 
+        efg_source_index += 1
+        filename = f"{path_MDrelax}/EFG_{efg_source}_{run}.dat"
+        data = np.loadtxt(filename)[:Ntimes, :]        
+        # read the time only once:
+        if (run_ind==0) and (efg_source_index==0):
+            # tau and t are the same
+            tau = data[:,0]            
+        # data columns order:    
+        # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
+        # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
+        t0 = time.time()
+        for nn in range(Ncations): #uno para cada litio
+            # plt.plot(data[:,0], data[:,nn+1])            
+            Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
+            Vxy, Vyz, Vxz = data[:,4+nn*6], data[:,5+nn*6], data[:,6+nn*6]                                            
+            # this EFG_nn is (3,3,Ntimes) shaped
+            # nn is the cation index
+            EFG_nn = np.array([[Vxx, Vxy, Vxz],
+                                   [Vxy, Vyy, Vyz],
+                                   [Vxz, Vyz, Vzz]])                                
+            # EFG_{source} shape: (3,3, Ntimes, Nruns, Ncations)
+            if cation in efg_source:            
+                EFG_cation[:,:,:, run_ind, nn] = EFG_nn            
+            elif anion in efg_source:            
+                EFG_anion[:,:,:, run_ind, nn] = EFG_nn            
+            elif solvent in efg_source:            
+                EFG_solvent[:,:,:, run_ind, nn] = EFG_nn          
+            
+# Calculo ACF==============================================
+def Autocorrelate(tau, EFG):
+    """
+    parameters:
+    tau :   1d-array    -  times in picoseconds
+    EFG:    array       -  shape: (3,3, Ntimes, Nruns, Ncations)
+    """
+    dt = tau[1]-tau[0]
+    # initialize
+    acf = np.zeros([Ntau, Nruns, Ncations])
+    efg_squared = np.zeros([Ntau, Nruns, Ncations])
+    # loop over time:        
+    for jj in range(Ntau):        
+        if jj%1000==0:
+            ttn = time.time()
+            print(f"    tau: {tau[jj]} ps")            
+        tau_jj = jj*dt          
+        max_tau_index = tau.size-jj                        
+        acf_jj = np.zeros_like([acf]) 
+        for ii in range(0,max_tau_index):                                 
+            acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
+                             axis=(0,1))                    
+        acf[jj,:,:] = acf_jj/(max_tau_index+1)
+        tt0 = time.time()
+    return acf
+    
+#-------------------------------------------
+print("Calculating ACF...")        
+
+print(rf"ACF with EFG-source: {cation}")
+tt0 = time.time()
+acf_cation = Autocorrelate(tau, EFG_cation)
+ttn = time.time()
+print(f"--- time for calculation: {ttn-tt0} s")
+efg_squared = np.sum(EFG_cation*EFG_cation, axis=(0,1))
+efg_cation_variance = np.mean(efg_squared)                
+
+print(rf"ACF with EFG-source: {anion}")
+acf_anion = Autocorrelate(tau, EFG_solvent)
+efg_squared = np.sum(EFG_anion*EFG_anion, axis=(0,1))
+efg_anion_variance[nn] = np.mean(efg_squared)
+
+print(rf"ACF with EFG-source: {solvent}")
+acf_solvent = Autocorrelate(tau, EFG_solvent)
+efg_squared = np.sum(EFG_solvent*EFG_solvent, axis=(0,1))
+efg_solvent_variance[nn] = np.mean(efg_squared)   
+tn = time.time()
+print(f"tiempo=   {tn-t0} s") 
+
+
+#===================================================================    
+#FIGURA: ACF:  -----------------------
+run_ind = -1
+for run in runs:    
+    run_ind += 1
+    fig, ax = plt.subplots(num=run_ind+1)
+    fig_cation, ax_cation = plt.subplots(num=(run_ind+1)*10)
+    fig_anion, ax_anion = plt.subplots(num=(run_ind+1)*100)
+    fig_solvent, ax_solvent = plt.subplots(num=(run_ind+1)*1000)
+    
+    for nn in range(Ncations):
+        ax_cation.plot(tau, acf_cation[:,run_ind, nn],
+                       label=f"{cation}{nn+1}", lw=2, alpha=0.5)
+        ax_anion.plot(tau, acf_anion[:,run_ind, nn],
+                      label=f"{cation}{nn+1}", lw=2, alpha=0.5)
+        ax_solvent.plot(tau, acf_solvent[:,run_ind, nn],
+                        label=f"{cation}{nn+1}", lw=2, alpha=0.5)        
+
+    # promedio sobre cationes:
+    acf_cation_promedio = np.mean(acf_cation[:,run_ind, :], axis=1)
+    acf_anion_promedio = np.mean(acf_anion[:,run_ind, :], axis=1)
+    acf_solvent_promedio = np.mean(acf_solvent[:,run_ind, :], axis=1)
+    acf_means[:, run_ind] = acf_cation_promedio+\
+                            acf_anion_promedio+\
+                            acf_solvent_promedio
+    efg_variance_mean_over_cations[run_ind] = np.mean(efg_variance[run_ind, :])                            
+
+    # plot means in each graph
+    ax_cation.plot(tau, acf_cation_promedio, label=f"Mean", 
+                   lw=3, color='red')
+    ax_anion.plot(tau, acf_anion_promedio, label=f"Mean", 
+                  lw=3, color='blue')    
+    ax_solvent.plot(tau, acf_solvent_promedio, label=f"Mean", 
+                    lw=3, color='dimgrey')
+    # plot all efg-sources in a single graph
+    ax.plot(tau, acf_means[:, run_ind],
+            color='k', lw=3, label='Total ACF')
+    ax.plot(tau, acf_cation_promedio, color='red',
+            lw=2, label=f'EFG-source: {cation}')    
+    ax.plot(tau, acf_anion_promedio, color='blue',
+            lw=2, label=f'EFG-source: {anion}')
+    ax.plot(tau, acf_solvent_promedio, color='grey',
+            lw=2, label=f'EFG-source: {solvent}')
+    for ax_i, fig_i, source in zip([ax, ax_cation, ax_anion, ax_solvent],
+                                   [fig, fig_cation, fig_anion, fig_solvent],
+                                   ["total",cation, anion, solvent]):            
+        ax_i.axhline(0, color='k', ls='--')
+        ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
+        ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+        ax_i.legend()
+        fig_i.suptitle(fr"{solvent}$-Li_2S_6$ EFG Autocorrelation Function."+"\n"+\
+                        f"EFG source: {source}"+"\n"+\
+                        f"run: {run}",
+                        fontsize=16)
+        fig_i.tight_layout()
+        fig_i.savefig(f"{savepath}/Figures/ACF_{run}_{source}.png")
+
+    # guardo autocorrelaciones promedio
+    data = np.array([tau, 
+                    acf_means[:, run_ind],
+                    acf_cation_promedio,
+                    acf_anion_promedio, 
+                    acf_solvent_promedio]).T
+    header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent}\n"\
+             "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
+    np.savetxt(f"{savepath}/ACF_{run}.dat", data, header=header)
+    
+    # guardo varianzas promedio    
+    data = np.array([efg_variance_mean_over_cations[run_ind]])
+    header = f"EFG variance: mean over {Ncations} Li ions.\t"\
+              "Units: e^2*A^-6*(4pi*epsilon0)^-2"
+    np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
+
+
+    #FIGURA: ACF cumulativos:  -----------------------
+    fig, ax = plt.subplots(num=(run_ind+1)*10000)
+    
+    data = acf_cation_promedio
+    integral = cumulative_simpson(data, x=tau, initial=0)    
+    cumulative = integral/efg_variance_mean_over_cations[run_ind]
+    ax.plot(tau, cumulative, label=f'EFG-source: {cation}',
+            lw=2, color="red")
+    
+    data = acf_anion_promedio
+    integral = cumulative_simpson(data, x=tau, initial=0)    
+    cumulative = integral/efg_variance_mean_over_cations[run_ind]
+    ax.plot(tau, cumulative, label=f'EFG-source: {anion}',
+            lw=2, color="blue")
+
+    data = acf_solvent_promedio
+    integral = cumulative_simpson(data, x=tau, initial=0)    
+    cumulative = integral/efg_variance_mean_over_cations[run_ind]
+    ax.plot(tau, cumulative, label=f'EFG-source: {solvent}',
+            lw=2, color="grey")                                   
+    
+    # Primero promedio y luego integro:    
+    integral = cumulative_simpson(acf_means[:, run_ind], x=tau, initial=0)
+    cumulative_promedio = integral/efg_variance_mean_over_cations[run_ind]
+    # grafico    
+    ax.plot(tau, cumulative_promedio, label="Cumulative of ACF mean", lw=4, color='k')         
+    ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")    
+    ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
+    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+    title = f"{solvent}-"\
+            f"{salt}"+"\n"\
+            r" Cumulative Integral of ACF:   "\
+            r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
+            r"$\langle\sum_{\alpha\beta}V_{\alpha\beta}(0)$"\
+            r"$V_{\alpha\beta}(t')\rangle dt'$"+"\n"+\
+            f"run: {run}"
+    fig.suptitle(title, fontsize=12)
+    fig.tight_layout()
+
+    corr_time_range = np.array([0.4, 0.8])*cumulative_promedio.size
+    corr_time = np.mean(cumulative_promedio[int(corr_time_range[0]):int(corr_time_range[0])])
+    ax.hlines(corr_time, 
+             tau[int(corr_time_range[0])],
+             tau[int(corr_time_range[1])], 
+             ls='--', color='grey', lw = 1.5,
+             label=f"~{corr_time:.1f} ps")
+
+    ax.legend()
+    fig.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
+#%% Finally, the mean of all runs:
+# FIGURA: Autocorrelaciones    
+fig, ax = plt.subplots(num=3781781746813134613543546)
+run_ind = -1
+for run in runs:    
+    run_ind += 1    
+    ax.plot(tau, acf_means[:, run_ind], label=f"run: {runs[run_ind]}", 
+            lw=2, color='grey', alpha=0.5)
+# compute the mean over runs:            
+acf_mean = np.mean(acf_means, axis=1)
+ax.plot(tau, acf_mean, label=f"Mean over runs", lw=3, color='k')
+
+ax.axhline(0, color='k', ls='--')
+ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
+ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+ax.legend()
+fig.suptitle(fr"{solvent}-{salt} EFG Autocorrelation Function", fontsize=16)
+fig.tight_layout()
+fig.savefig(f"{savepath}/Figures/ACF_mean-over-runs.png")
+
+
+# FIGURA: Cumulatives---------------------------------------------------
+fig, ax = plt.subplots(num=37817817174681374681354132541354)
+run_ind = -1
+for run in runs:    
+    run_ind += 1        
+    data = acf_means[:, run_ind]
+    integral = cumulative_simpson(data, x=tau, initial=0)    
+    cumulative = integral/efg_variance_mean_over_cations[run_ind]
+    ax.plot(tau, cumulative, label=f"run: {runs[run_ind]}",
+            lw=2, color="grey", alpha=0.5)                                   
+    
+# compute the mean over runs:            
+######## ACA NO SE SI POMEDIAR LA VARIANZA ANTES O DESPUES DE INTEGRAR
+data = acf_mean # mean over runs
+efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations)
+integral = cumulative_simpson(data, x=tau, initial=0)
+cumulative = integral/efg_variance_mean_over_runs
+ax.plot(tau, cumulative, label="Mean over runs", lw=3, color="k") 
+
+ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
+ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+title = f"{solvent}-"\
+        f"{salt}"+"\n"\
+        r" Cumulative Integral of ACF:   "\
+        r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
+        r"$\langle\sum_{\alpha\beta}V_{\alpha\beta}(0)$"\
+        r"$V_{\alpha\beta}(t')\rangle dt'$"
+fig.suptitle(title, fontsize=12)
+fig.tight_layout()
+
+corr_time_range = np.array([0.4, 0.8])*cumulative.size
+corr_time = np.mean(cumulative[int(corr_time_range[0]):int(corr_time_range[1])])
+ax.hlines(corr_time, 
+         tau[int(corr_time_range[0])],
+         tau[int(corr_time_range[1])], 
+         ls='--', color='grey', lw = 1.5,
+         label=f"~{corr_time:.1f} ps")
+
+ax.legend()
+fig.savefig(f"{savepath}/Figures/CorrelationTime_mean-over-runs.png")
+
+
+# %%

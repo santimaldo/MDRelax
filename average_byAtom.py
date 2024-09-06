@@ -54,8 +54,10 @@ def cumulative_simpson(ydata, x=None, initial=0):
 path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
 cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","TFS", "DME"] # names
+salt="LiTFSI"
 
 runs_inds = range(6,11)
+runs_inds = range(7,11)
 mdp_file = "HQ"
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
@@ -262,7 +264,7 @@ for run in runs:
     fig.tight_layout()
 
     corr_time_range = np.array([0.4, 0.8])*cumulative_promedio.size
-    corr_time = np.mean(cumulative_promedio[int(corr_time_range[0]):int(corr_time_range[0])])
+    corr_time = np.mean(cumulative_promedio[int(corr_time_range[0]):int(corr_time_range[1])])
     ax.hlines(corr_time, 
              tau[int(corr_time_range[0])],
              tau[int(corr_time_range[1])], 
@@ -271,7 +273,7 @@ for run in runs:
 
     ax.legend()
     fig.savefig(f"{path_MDrelax}/Figures/CorrelationTime_{run}.png")
-#%% Finally, the mean of all runs:
+# Finally, the mean of all runs:
 # FIGURA: Autocorrelaciones    
 fig, ax = plt.subplots(num=3781781746813134613543546)
 run_ind = -1
