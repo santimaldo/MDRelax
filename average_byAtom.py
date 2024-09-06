@@ -175,7 +175,7 @@ for run in runs:
     acf_means[:, run_ind] = acf_cation_promedio+\
                             acf_anion_promedio+\
                             acf_solvent_promedio
-    efg_variance_mean_over_cations[run_ind] = np.mean(efg_variance[run_ind, :])                            
+    efg_variance_mean_over_cations[run_ind] = np.mean(efg_variance[run_ind, :])
 
     # plot means in each graph
     ax_cation.plot(tau, acf_cation_promedio, label=f"Mean", 

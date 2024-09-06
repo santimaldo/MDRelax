@@ -67,13 +67,13 @@ for idx in range(len(MDfiles)):
     EFG_anion = np.zeros([len(u.trajectory), Ncations, 3, 3])    
     EFG_cation = np.zeros([len(u.trajectory), Ncations, 3, 3])    
     EFG_solvent = np.zeros([len(u.trajectory), Ncations, 3, 3])    
-    nn = -1
+    t_ind = -1
     for timestep in u.trajectory:
-        nn+=1         
+        t_ind+=1         
         n_frame = u.trajectory.frame
-        if nn%100==0:                
+        if t_ind%100==0:                
             print("++++++++++++++++++++++++++++++++++++++++++")
-            print(f"dataset {idx+1}/{len(MDfiles)}, frame={n_frame}, time = {t[nn]:.2f} ps\n\n")                
+            print(f"dataset {idx+1}/{len(MDfiles)}, frame={n_frame}, time = {t[t_ind]:.2f} ps\n\n")                
 
         cations_group = u.select_atoms(f"name {cation}*")
         
@@ -84,7 +84,8 @@ for idx in range(len(MDfiles)):
             EFG_t_nthcation_anion = np.zeros([3,3])
             EFG_t_nthcation_cation = np.zeros([3,3])
             EFG_t_nthcation_solvent = np.zeros([3,3])
-            for AtomType in Charges['AtomType']:
+            for residue, AtomType in zip(Charges['residue'],
+                                         Charges['AtomType']):
                 q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
                 
                 group = u.select_atoms(f"name {AtomType}")                                
@@ -124,15 +125,15 @@ for idx in range(len(MDfiles)):
                 EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
                                         y_distances, z_distances)
                       
-                if anion in AtomType:
-                    EFG_t_nthcation_anion += EFG_t_AtomType
-                if cation in AtomType:
+                if anion in residue:
+                    EFG_t_nthcation_anion += EFG_t_AtomType                    
+                if cation in residue:
                     EFG_t_nthcation_cation += EFG_t_AtomType
                 else:
                     EFG_t_nthcation_solvent += EFG_t_AtomType                    
-            EFG_anion[nn, cation_index, :, :] = EFG_t_nthcation_anion
-            EFG_cation[nn, cation_index, :, :] = EFG_t_nthcation_cation
-            EFG_solvent[nn, cation_index, :, :] = EFG_t_nthcation_solvent
+            EFG_anion[t_ind, cation_index, :, :] = EFG_t_nthcation_anion
+            EFG_cation[t_ind, cation_index, :, :] = EFG_t_nthcation_cation
+            EFG_solvent[t_ind, cation_index, :, :] = EFG_t_nthcation_solvent
     #---------------------------------------------------------
     ### EXPORT DATA        
     for EFG, efg_source in zip([EFG_cation, EFG_anion, EFG_solvent], [cation, anion, solvent]):

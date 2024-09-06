@@ -2,8 +2,79 @@ import numpy as np
 # import matplotlib.pyplot as plt
 # import MDAnalysis as mda
 import pandas as pd
+from scipy.integrate import cumulative_trapezoid, simpson
+import time
 
 
+#=========================================================
+#=========================================================
+def Autocorrelate(tau, EFG):
+    """
+    parameters:
+    tau :   1d-array    -  times in picoseconds
+    EFG:    array       -  shape: (3,3, Ntimes, Nruns, Ncations)
+    """
+    dt = tau[1]-tau[0]
+    Ntau = tau.size
+    # initialize
+    acf = np.zeros([Ntau, Nruns, Ncations])
+    efg_squared = np.zeros([Ntau, Nruns, Ncations])
+    # loop over time:        
+    for jj in range(Ntau):        
+        if jj%1000==0:
+            ttn = time.time()
+            print(f"    tau: {tau[jj]} ps")            
+        tau_jj = jj*dt          
+        max_tau_index = tau.size-jj                        
+        acf_jj = np.zeros([Nruns, Ncations]) 
+        for ii in range(0,max_tau_index):                                 
+            acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
+                             axis=(0,1))                    
+        acf[jj,:,:] = acf_jj/(max_tau_index+1)
+        tt0 = time.time()
+    return acf
+#=========================================================
+#=========================================================    
+
+
+#=========================================================
+#=========================================================
+def calculate_EFG(q, r, x, y, z):
+    """
+    Calculate de EFG based on charge points.
+    r is the distance between observation point and EFG source (q).
+    x, y, z are the components of vec(r).
+    """
+    dist3inv = 1/(r*r*r)
+    dist5inv = 1/((r*r*r*r*r))
+                    
+    Vxx = q *(3 * x * x * dist5inv - dist3inv)
+    Vxy = q *(3 * x * y * dist5inv )
+    Vxz = q *(3 * x * z * dist5inv )
+    Vyy = q *(3 * y * y * dist5inv - dist3inv)
+    Vyz = q *(3 * y * z * dist5inv )
+    Vzz = q *(3 * z * z * dist5inv - dist3inv)
+
+    Vxx = np.sum(Vxx)
+    Vxy = np.sum(Vxy)
+    Vxz = np.sum(Vxz)
+    Vyy = np.sum(Vyy)
+    Vyz = np.sum(Vyz)
+    Vzz = np.sum(Vzz)
+    
+    EFG = np.array([[Vxx, Vxy, Vxz],
+                    [Vxy, Vyy, Vyz],
+                    [Vxz, Vyz, Vzz]]) 
+
+    return EFG
+#=========================================================
+#=========================================================
+
+
+
+
+#=========================================================
+#=========================================================
 def get_Charges(species_list, path):
     """    
     get charges of the species
@@ -16,10 +87,10 @@ def get_Charges(species_list, path):
 
     Returns
     -------
-    Charges : dataFrame ['AtomType',  'Charge']
+    Charges : dataFrame ['residue', 'AtomType',  'Charge']
     """    
 
-    charges_df = pd.DataFrame(columns=["AtomType", "Charge"])#, "atom", "residue"])
+    charges_df = pd.DataFrame(columns=["residue", "AtomType", "Charge"])#, "atom", "residue"])
     for species in species_list:
         with open(f"{path}park.ff/{species}.itp", "r") as f:    
             with open(f"{path}/{species}.charges", "w") as wf:
@@ -41,12 +112,16 @@ def get_Charges(species_list, path):
                         break
         # esto se basa en que el atomo y la carga son las columnas 4 y 6
         charges_df_species = pd.read_csv(f"{path}/{species}.charges", sep='\s+', header=None, skiprows=1)
-        charges_df_species = charges_df_species.iloc[:, 4:7:2].drop_duplicates()
-        charges_df_species.columns =["AtomType", "Charge"]
+        charges_df_species = charges_df_species.iloc[:, [3,4,6]].drop_duplicates()
+        charges_df_species.columns =["residue", "AtomType", "Charge"]
         charges_df = pd.concat([charges_df, charges_df_species], ignore_index=True, axis=0)
     return charges_df    
+#=========================================================
+#=========================================================
 
 
+#=========================================================
+#=========================================================
 def get_dt(mdp_file):
     """    
     get time-step between frames from the .mdp file
@@ -85,8 +160,12 @@ def get_dt(mdp_file):
             raise Warning(msg)
     dt = dS*dt_MD
     return dt
+#=========================================================
+#=========================================================
 
 
+#=========================================================
+#=========================================================
 def get_Ntimes(EFG_file):
     """    
     get number of time-steps of an EFG file
@@ -101,32 +180,24 @@ def get_Ntimes(EFG_file):
     data = np.loadtxt(EFG_file)
     Ntimes = data.shape[0]
     return Ntimes
+#=========================================================
+#=========================================================
 
-def calculate_EFG(q, r, x, y, z):
+
+#=========================================================
+#=========================================================
+def cumulative_simpson(ydata, x=None, initial=0):
     """
-    Calculate de EFG based on charge points.
-    r is the distance between observation point and EFG source (q).
-    x, y, z are the components of vec(r).
+    Compute cumulative integra with simpson's rule
+    ydata must be a 1D array
     """
-    dist3inv = 1/(r*r*r)
-    dist5inv = 1/((r*r*r*r*r))
-                    
-    Vxx = q *(3 * x * x * dist5inv - dist3inv)
-    Vxy = q *(3 * x * y * dist5inv )
-    Vxz = q *(3 * x * z * dist5inv )
-    Vyy = q *(3 * y * y * dist5inv - dist3inv)
-    Vyz = q *(3 * y * z * dist5inv )
-    Vzz = q *(3 * z * z * dist5inv - dist3inv)
-
-    Vxx = np.sum(Vxx)
-    Vxy = np.sum(Vxy)
-    Vxz = np.sum(Vxz)
-    Vyy = np.sum(Vyy)
-    Vyz = np.sum(Vyz)
-    Vzz = np.sum(Vzz)
-    
-    EFG = np.array([[Vxx, Vxy, Vxz],
-                    [Vxy, Vyy, Vyz],
-                    [Vxz, Vyz, Vzz]]) 
-
-    return EFG
+    # inicializo    
+    if x is None: x=np.arange(ydata.size)        
+    integral = np.zeros_like(ydata)
+    integral[0] = initial
+    for nf in range(1, ydata.size):         
+        ytmp, xtmp = ydata[:nf+1], x[:nf+1]    
+        integral[nf] = simpson(ytmp, x=xtmp)    
+    return integral
+#=========================================================
+#=========================================================
