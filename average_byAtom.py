@@ -42,7 +42,7 @@ def cumulative_simpson(ydata, x=None, initial=0):
 #%%
 
 # path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
-# cation, anion, solvent_hr = ["Li", "S6", "DME"] # hr stands for "human readable"
+# cation, anion, solvent = ["Li", "S6", "DME"] # hr stands for "human readable"
 # savepath = path
 # salt = r"$Li_2S_6$"
 
@@ -66,7 +66,7 @@ Nruns = len(runs)
 # Number of Li ions in a run 
 Ncations = 4
 
-efg_sources = [cation, anion, solvent_hr]
+efg_sources = [cation, anion, solvent]
 acf_cation = np.zeros([Ntimes, Nruns, Ncations])
 acf_anion = np.zeros([Ntimes, Nruns, Ncations])
 acf_solvent = np.zeros([Ntimes, Nruns, Ncations])
@@ -141,7 +141,7 @@ for run in runs:
             elif anion in efg_source:
                 acf_anion[:, run_ind, nn] = acf
                 efg_anion_variance[nn] = np.mean(efg_squared)
-            elif solvent_hr in efg_source:
+            elif solvent in efg_source:
                 acf_solvent[:, run_ind, nn] = acf
                 efg_solvent_variance[nn] = np.mean(efg_squared)   
             tn = time.time()
@@ -190,15 +190,15 @@ for run in runs:
     ax.plot(tau, acf_anion_promedio, color='blue',
             lw=2, label=f'EFG-source: {anion}')
     ax.plot(tau, acf_solvent_promedio, color='grey',
-            lw=2, label=f'EFG-source: {solvent_hr}')
+            lw=2, label=f'EFG-source: {solvent}')
     for ax_i, fig_i, source in zip([ax, ax_cation, ax_anion, ax_solvent],
                                    [fig, fig_cation, fig_anion, fig_solvent],
-                                   ["total",cation, anion, solvent_hr]):            
+                                   ["total",cation, anion, solvent]):            
         ax_i.axhline(0, color='k', ls='--')
         ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
         ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
         ax_i.legend()
-        fig_i.suptitle(fr"{solvent_hr}$-Li_2S_6$ EFG Autocorrelation Function."+"\n"+\
+        fig_i.suptitle(fr"{solvent}$-Li_2S_6$ EFG Autocorrelation Function."+"\n"+\
                         f"EFG source: {source}"+"\n"+\
                         f"run: {run}",
                         fontsize=16)
@@ -211,7 +211,7 @@ for run in runs:
                     acf_cation_promedio,
                     acf_anion_promedio, 
                     acf_solvent_promedio]).T
-    header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent_hr}\n"\
+    header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent}\n"\
              "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
     np.savetxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
     
@@ -240,7 +240,7 @@ for run in runs:
     data = acf_solvent_promedio
     integral = cumulative_simpson(data, x=tau, initial=0)    
     cumulative = integral/efg_variance_mean_over_cations[run_ind]
-    ax.plot(tau, cumulative, label=f'EFG-source: {solvent_hr}',
+    ax.plot(tau, cumulative, label=f'EFG-source: {solvent}',
             lw=2, color="grey")                                   
     
     # Primero promedio y luego integro:    
@@ -251,7 +251,7 @@ for run in runs:
     ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")    
     ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
     ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
-    title = f"{solvent_hr}-"\
+    title = f"{solvent}-"\
             f"{salt}"+"\n"\
             r" Cumulative Integral of ACF:   "\
             r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\
@@ -287,7 +287,7 @@ ax.axhline(0, color='k', ls='--')
 ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
 ax.legend()
-fig.suptitle(fr"{solvent_hr}-{salt} EFG Autocorrelation Function", fontsize=16)
+fig.suptitle(fr"{solvent}-{salt} EFG Autocorrelation Function", fontsize=16)
 fig.tight_layout()
 fig.savefig(f"{path_MDrelax}/Figures/ACF_mean-over-runs.png")
 
@@ -313,7 +313,7 @@ ax.plot(tau, cumulative, label="Mean over runs", lw=3, color="k")
 
 ax.set_ylabel(r"$C(\tau)$ [ps]", fontsize=16)
 ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
-title = f"{solvent_hr}-"\
+title = f"{solvent}-"\
         f"{salt}"+"\n"\
         r" Cumulative Integral of ACF:   "\
         r"$C(\tau)=\langle \mathrm{V}^2\rangle^{-1} \int_0^\tau $"\

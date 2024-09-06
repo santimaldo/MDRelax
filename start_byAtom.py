@@ -35,6 +35,9 @@ path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
 cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","TFS", "DME"] # names
 
+# the times from 0 to initial_time (ps) are dropped
+initial_time = 1 # ps
+
 runs_inds = range(6,11)
 mdp_file = "HQ"
 MDfiles = [f"HQ.{i}" for i in runs_inds]
