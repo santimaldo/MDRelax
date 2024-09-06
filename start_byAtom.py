@@ -14,10 +14,26 @@ import MDAnalysis as mda
 import pandas as pd
 from Functions import *
 
-path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
-savepath = path+"MDRelax/"
-cation, anion, solvent = ["Li","S6", "DME_7CB8A2"] # as in .itp files
-solvent_hr = "DME"
+# DME - Li2S6
+# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
+# path_MDrelax = path+"MDRelax/"
+# cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+# solvent = "DME"
+
+# runs_inds = range(6,11)
+# mdp_file = "HQ"
+# MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
+# trajectory_format = ".trr" # ".trr" or ".xtc"
+# topology_format = ".gro" # ".tpr" or ".gro"
+# Ncations = 4 # numero de Li+
+
+# DME - Li2S6
+path_Gromacs = "/home/santi/mendieta/DME_LiTFSI/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","TFS", "DME"] # names
 
 runs_inds = range(6,11)
 mdp_file = "HQ"
@@ -26,25 +42,18 @@ runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
 trajectory_format = ".trr" # ".trr" or ".xtc"
 topology_format = ".gro" # ".tpr" or ".gro"
-
-
-# path = "/home/santi/mendieta/TEGDME/"
-# savepath = "/home/santi/MD/MDRelax_results/TEGDME/"
-# cation, anion, solvent = ["Li","S6", "tegdme"] # as in .itp files
-# solvent_hr = "TEGDME"
-# runs = [f"{t:.0f}_ps" for t in [6000,7000,8000,9000,10000]]
-# MDfiles = [f"HQ.{i}" for i in range(6,11)]
-
-
 Ncations = 4 # numero de Li+
-dt = get_dt(mdp_file=f"{path}{mdp_file}.mdp")
-Charges = get_Charges([cation, anion, solvent], path)
+
+
+#---------------------------------------------------
+dt = get_dt(mdp_file=f"{path_Gromacs}{mdp_file}.mdp")
+Charges = get_Charges([cation_itp, anion_itp, solvent_itp], path_Gromacs)
 
 # loop over different runs
 for idx in range(len(MDfiles)):    
     run = runs[idx]
     filename = MDfiles[idx]    
-    u = mda.Universe(f"{path}{filename}{topology_format}", f"{path}{filename}{trajectory_format}")    
+    u = mda.Universe(f"{path_Gromacs}{filename}{topology_format}", f"{path_Gromacs}{filename}{trajectory_format}")    
     box=u.dimensions
     center = box[0:3]/2
             
@@ -123,7 +132,7 @@ for idx in range(len(MDfiles)):
             EFG_solvent[nn, cation_index, :, :] = EFG_t_nthcation_solvent
     #---------------------------------------------------------
     ### EXPORT DATA        
-    for EFG, efg_source in zip([EFG_cation, EFG_anion, EFG_solvent], [cation, anion, solvent_hr]):
+    for EFG, efg_source in zip([EFG_cation, EFG_anion, EFG_solvent], [cation, anion, solvent]):
         Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
         Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
         
@@ -134,7 +143,7 @@ for idx in range(len(MDfiles)):
         data = np.array(data).T    
         header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
                 r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
-        filename = f"{savepath}/EFG_{efg_source}_{run}.dat"
+        filename = f"{path_MDrelax}/EFG_{efg_source}_{run}.dat"
         np.savetxt(filename, data, header=header)
     del EFG_anion, EFG_solvent
     #----------------------------------------------------------    

@@ -41,28 +41,26 @@ def cumulative_simpson(ydata, x=None, initial=0):
 
 #%%
 
-path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
-cation, anion, solvent_hr = ["Li", "S6", "DME"] # hr stands for "human readable"
-savepath = path
-salt = r"$Li_2S_6$"
+# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
+# cation, anion, solvent_hr = ["Li", "S6", "DME"] # hr stands for "human readable"
+# savepath = path
+# salt = r"$Li_2S_6$"
 
-runs_inds = range(6, 11)
-runs_inds = range(7, 8)
-MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs_inds = range(6, 11)
+# MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
+# DME - LiTFSI
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","TFS", "DME"] # names
+
+runs_inds = range(6,11)
+mdp_file = "HQ"
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
-# path = "/home/santi/MD/MDRelax_results/TEGDME/"
-# savepath=path
-# runs = [f"{t:.1f}_ps" for t in [6000,7000,8000,9000,10000]]
-# solvent = "TEGDME"
-
-# print("WARNING!! revisar el dt, esta multiplicado por 5")
-
-
-
-
 # Number of time steps
-Ntimes = get_Ntimes(f"{path}EFG_{cation}_{runs[0]}.dat")
+Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")
 # Number of runs
 Nruns = len(runs)
 # Number of Li ions in a run 
@@ -86,7 +84,7 @@ for run in runs:
     efg_source_index = -1
     for efg_source in efg_sources: 
         efg_source_index += 1
-        filename = f"{path}/EFG_{efg_source}_{run}.dat"
+        filename = f"{path_MDrelax}/EFG_{efg_source}_{run}.dat"
         data = np.loadtxt(filename)[:Ntimes, :]        
         # data columns order:    
         # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
@@ -205,7 +203,7 @@ for run in runs:
                         f"run: {run}",
                         fontsize=16)
         fig_i.tight_layout()
-        fig_i.savefig(f"{savepath}/Figuras/ACF_{run}_{source}.png")
+        fig_i.savefig(f"{path_MDrelax}/Figures/ACF_{run}_{source}.png")
 
     # guardo autocorrelaciones promedio
     data = np.array([tau, 
@@ -215,13 +213,13 @@ for run in runs:
                     acf_solvent_promedio]).T
     header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent_hr}\n"\
              "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
-    np.savetxt(f"{savepath}/ACF_{run}.dat", data, header=header)
+    np.savetxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
     
     # guardo varianzas promedio    
     data = np.array([efg_variance_mean_over_cations[run_ind]])
     header = f"EFG variance: mean over {Ncations} Li ions.\t"\
               "Units: e^2*A^-6*(4pi*epsilon0)^-2"
-    np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
+    np.savetxt(f"{path_MDrelax}/EFG_variance_{run}.dat", data, header=header)
 
 
     #FIGURA: ACF cumulativos:  -----------------------
@@ -272,7 +270,7 @@ for run in runs:
              label=f"~{corr_time:.1f} ps")
 
     ax.legend()
-    fig.savefig(f"{savepath}/Figuras/CorrelationTime_{run}.png")
+    fig.savefig(f"{path_MDrelax}/Figures/CorrelationTime_{run}.png")
 #%% Finally, the mean of all runs:
 # FIGURA: Autocorrelaciones    
 fig, ax = plt.subplots(num=3781781746813134613543546)
@@ -291,7 +289,7 @@ ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
 ax.legend()
 fig.suptitle(fr"{solvent_hr}-{salt} EFG Autocorrelation Function", fontsize=16)
 fig.tight_layout()
-fig.savefig(f"{savepath}/Figuras/ACF_mean-over-runs.png")
+fig.savefig(f"{path_MDrelax}/Figures/ACF_mean-over-runs.png")
 
 
 # FIGURA: Cumulatives---------------------------------------------------
@@ -333,7 +331,7 @@ ax.hlines(corr_time,
          label=f"~{corr_time:.1f} ps")
 
 ax.legend()
-fig.savefig(f"{savepath}/Figuras/CorrelationTime_mean-over-runs.png")
+fig.savefig(f"{path_MDrelax}/Figures/CorrelationTime_mean-over-runs.png")
 
 
 # %%

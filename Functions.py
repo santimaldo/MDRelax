@@ -59,18 +59,31 @@ def get_dt(mdp_file):
     dt : float   -  dt in ps = 1e-12 s
     """            
     with open(mdp_file, "r") as f:        
+        parameters_obtained=0
         for ii in range(1000):
-            line = f.readline()             
+            line = f.readline()        
+            if "dt" in line:
+                try:
+                    # paso de dinamica
+                    dt_MD = float(line.split()[2])                    
+                    parameters_obtained+=1
+                except:
+                    msg = f"Could not get dt from 'dt' in {mdp_file}"
+                    raise Warnint(msg)                
             if "nstxout" in line:
                 try:
-                    dt = float(line.split()[2])
+                    # intervalo de guardado:
+                    dS = float(line.split()[2])
+                    parameters_obtained+=1
                 except:
                     msg = f"Could not get dt from 'nstxout' in {mdp_file}"
-                    raise Warnint(msg)
-                break
+                    raise Warnint(msg)                    
+            if parameters_obtained == 2:
+                break            
         if ii>=999:
-            msg = f"Is 'nstxout' in {mdp_file}?"
-            raise Warnint(msg)
+            msg = f"Is this even a .mdp file? : {mdp_file}"
+            raise Warning(msg)
+    dt = dS*dt_MD
     return dt
 
 
