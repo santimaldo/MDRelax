@@ -15,7 +15,7 @@ def Autocorrelate(tau, EFG):
     EFG:    array       -  shape: (3,3, Ntimes, Nruns, Ncations)
     """
     dt = tau[1]-tau[0]
-    Ntau = tau.size
+    _, _, Ntau, Nruns, Ncations = EFG.shape    
     # initialize
     acf = np.zeros([Ntau, Nruns, Ncations])
     efg_squared = np.zeros([Ntau, Nruns, Ncations])

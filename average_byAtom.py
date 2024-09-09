@@ -293,7 +293,9 @@ fig.suptitle(fr"{solvent}-{salt} EFG Autocorrelation Function", fontsize=16)
 fig.tight_layout()
 fig.savefig(f"{path_MDrelax}/Figures/ACF_mean-over-runs.png")
 
-
+data = np.array([tau, acf_mean]).T
+header = r"tau [ps]\tACF(tau) [e^2A^{-6}(4pi epsilon_0)^{-2}]"
+np.savetxt(f"{savepath}/ACF_mean_over_runs.dat", data, header=header)
 # FIGURA: Cumulatives---------------------------------------------------
 fig, ax = plt.subplots(num=37817817174681374681354132541354)
 run_ind = -1

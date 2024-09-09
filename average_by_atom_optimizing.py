@@ -20,24 +20,25 @@ plt.rcParams.update({'font.size': 12})
 
 #%%
 
-# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
-# cation, anion, solvent = ["Li", "S6", "DME"] # hr stands for "human readable"
-# savepath = path
-# salt = r"$Li_2S_6$"
-
-# runs_inds = range(6, 11)
-# MDfiles = [f"HQ.{i}" for i in runs_inds]
-# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
-
-# DME - LiTFSI
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
-savepath = path_MDrelax + "test"
-cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","TFS", "DME"] # names
-salt = "LiTFSI"
+# DME - Li2S6
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
+savepath = path_MDrelax
+cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","S6", "DME"] # names
+salt = r"Li$_2$S$_6$"
 runs_inds = range(6,11)
 mdp_file = "HQ"
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
+# DME - LiTFSI
+# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+# savepath = path_MDrelax + "test/"
+# cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
+# cation, anion, solvent = ["Li","TFS", "DME"] # names
+# salt = "LiTFSI"
+# runs_inds = range(6,11)
+# mdp_file = "HQ"
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
 # Number of time steps
 Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")
@@ -124,7 +125,6 @@ print(f"tiempo=   {tn-t0} s")
 
 #%%===================================================================    
 #FIGURA: ACF:  -----------------------
-
 # Mean values over carions:
 #
 # efg_variance_mean_over_cations.shape = [Ntimes]
@@ -135,7 +135,6 @@ acf_anion_mean = np.mean(acf_anion, axis=2)
 acf_solvent_mean = np.mean(acf_solvent, axis=2)
 acf_means = acf_cation_mean+ acf_anion_mean + acf_solvent_mean
 
-#%%
 run_ind = -1
 for run in runs:    
     run_ind += 1   
@@ -183,7 +182,7 @@ for run in runs:
         ax_i.axhline(0, color='k', ls='--')
         ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=14)
         ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=14)    
-        ax_i.set_title(f"EDF-source: {source}")
+        ax_i.set_title(f"EFG-source: {source}")
         ax_i.legend()
         
     title = f"{solvent}-{salt} : run: {run}.    "\
@@ -192,18 +191,18 @@ for run in runs:
              r"$V_{\alpha\beta}(\tau)\rangle$"    
     fig_subplots.suptitle(title, fontsize=16)
     fig_subplots.tight_layout(rect=[0, 0.03, 1, 0.95])
-    
-    # Save subplots figure
-    fig_subplots.savefig(f"{savepath}/Figures/ACF_{run}_subplots.png")
-    
+        
     # Customize and save the mean figure
     ax_mean.axhline(0, color='k', ls='--')
     ax_mean.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=14)
     ax_mean.set_xlabel(r"$\tau$ [ps]", fontsize=14)
     ax_mean.legend()    
     fig_mean.suptitle(title, fontsize=16)
-    fig_mean.tight_layout()
-    fig_mean.savefig(f"{savepath}/Figures/ACF_{run}_mean.png")
+    fig_mean.tight_layout()    
+
+    fig_subplots.savefig(f"{savepath}/Figures/ACF_bySource_{run}.png")
+    fig_mean.savefig(f"{savepath}/Figures/ACF_{run}.png")
+
 
     # Saving Data -------------------------------------
     # guardo autocorrelaciones promedio
@@ -271,7 +270,8 @@ for run in runs:
              label=f"~{corr_time:.1f} ps")
 
     ax.legend()
-    fig.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
+    fig_subplots.savefig(f"{savepath}/Figures/CorrelationTime_bySource_{run}.png")
+    fig_mean.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
 #%% Finally, the mean of all runs:
 # FIGURA: Autocorrelaciones    
 fig, ax = plt.subplots(num=3781781746813134613543546)
@@ -291,6 +291,10 @@ ax.legend()
 fig.suptitle(fr"{solvent}-{salt} EFG Autocorrelation Function", fontsize=16)
 fig.tight_layout()
 fig.savefig(f"{savepath}/Figures/ACF_mean-over-runs.png")
+
+data = np.array([tau, acf_mean]).T
+header = r"tau [ps]\tACF(tau) [e^2A^{-6}(4pi epsilon_0)^{-2}]"
+np.savetxt(f"{savepath}/ACF_mean_over_runs.dat", data, header=header)
 
 
 # FIGURA: Cumulatives---------------------------------------------------
@@ -334,5 +338,8 @@ ax.hlines(corr_time,
 ax.legend()
 fig.savefig(f"{savepath}/Figures/CorrelationTime_mean-over-runs.png")
 
-
+## save efg_variance_mean_over_runs data
+header = f"EFG variance: mean over runs.\t"\
+              "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
+np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
 # %%

@@ -14,26 +14,18 @@ import MDAnalysis as mda
 import pandas as pd
 from Functions import *
 
-# DME - Li2S6
-# path = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/"
-# path_MDrelax = path+"MDRelax/"
-# cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
-# solvent = "DME"
-
-# runs_inds = range(6,11)
-# mdp_file = "HQ"
-# MDfiles = [f"HQ.{i}" for i in runs_inds]
-# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
-
-# trajectory_format = ".trr" # ".trr" or ".xtc"
-# topology_format = ".gro" # ".tpr" or ".gro"
-# Ncations = 4 # numero de Li+
 
 # DME - Li2S6
-path_Gromacs = "/home/santi/mendieta/DME_LiTFSI/"
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
-cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","TFS", "DME"] # names
+path_Gromacs = "/home/santi/mendieta/DME/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
+cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","S6", "DME"] # names
+
+# DME - LiTFSI
+# path_Gromacs = "/home/santi/mendieta/DME_LiTFSI/"
+# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+# cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
+# cation, anion, solvent = ["Li","TFS", "DME"] # names
 
 # the times from 0 to initial_time (ps) are dropped
 initial_time = 1 # ps
