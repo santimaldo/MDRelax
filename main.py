@@ -48,7 +48,7 @@ get_EFG_data(path_Gromacs, path_MDrelax,
              trajectory_format = trajectory_format,
              topology_format = topology_format
              )
-print(f"EFG time: {time.time()-0:.0f} s")
+print(f"EFG time: {time.time()-t0:.0f} s")
 
 
 t0 = time.time()
@@ -60,4 +60,4 @@ calculate_ACF(path_MDrelax,
               Ncations = Ncations,
               runs_prefix = runs_prefix,
               runs_suffix = runs_suffix)             
-print(f"ACF time: {time.time()-0:.0f} s")
+print(f"ACF time: {time.time()-t0:.0f} s")

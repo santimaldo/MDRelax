@@ -29,24 +29,25 @@ def ExpDecN(x, *params):
     return y
 
 
-
+names=[]
+paths=[]
 # ACF 0
-name0 = "DME-LiTFSI"
-path0 = "/home/santi/MD/MDRelax_results/DME_LiTFSI/test/"
+names.append("DME-LiTFSI")
+paths.append("/home/santi/MD/MDRelax_results/DME_LiTFSI/")
 
 # ACF 1
-# name1 = r"DME-$Li_2S_6$"
-# path1 = "/home/santi/MD/MDRelax_results/DME_PS/"
+names.append(r"DME-$Li_2S_6$")
+paths.append("/home/santi/MD/MDRelax_results/DME_PS/")
 
-# ACF 1
-name1 = r"DME-$Li^+$"
-path1 = "/home/santi/MD/MDRelax_results/DME_no-anion/"
+# ACF 2
+names.append(r"DME-$Li^+$")
+paths.append("/home/santi/MD/MDRelax_results/DME_no-anion/")
 
 
 # numero de exponenciales
 # tau_guess = [0.03,0.05,5,20]
-tau_guess = [0.03,1,5]
-A_j_guess = [0.03,1,5]
+tau_guess = [0.03,1,5,10]
+A_j_guess = [0.03,1,5,10]
 N = len(tau_guess)
 
 # processing parameters:
@@ -54,13 +55,13 @@ N = len(tau_guess)
 cutoff_time = 50 # ps
 
 
-colors_data = ['cornflowerblue', 'lightcoral']
-colors_fit = ['midnightblue', 'firebrick']
+colors_data = ['cornflowerblue', 'lightcoral', 'lightgreen']
+colors_fit = ['midnightblue', 'firebrick', 'forestgreen']
 efg_variances = []
 correlation_times = []
 # fig, ax= plt.subplots(nrows=1, ncols=1,figsize=(10, 6))
 fig, (ax, ax_resid) = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), gridspec_kw={'height_ratios': [3, 1]})
-for idx, (path, name) in enumerate(zip([path0, path1], [name0, name1])):
+for idx, (path, name) in enumerate(zip(paths, names)):
 
     tau, acf = np.loadtxt(f"{path}ACF_mean-over-runs.dat").T
 
@@ -135,10 +136,10 @@ ax.legend(title=legend_title, fontsize=14)
 
 
 ### tmp settings
-# ax.set_xlim([-1,5])
-# ax.set_ylim([5e-3,3e-2])
-# # ax.set_xscale('log')
-# ax.set_yscale('log')
+ax.set_xlim([1e-2,100])
+ax.set_ylim([1e-4,3e-2])
+ax.set_xscale('log')
+ax.set_yscale('log')
 
 # Formatting residuals plot
 ax_resid.axhline(0, color='k', ls='--')
@@ -161,7 +162,6 @@ I = 1.5  # spin 3/2
 
 gamma = 0.17  # Sternheimmer factor
 
-names = [name0, name1]
 for idx in range(len(correlation_times)):
 
     efg_variance = efg_variances[idx]* ke**2 * e**2 / (1e-10)**6 # (V/m)^2

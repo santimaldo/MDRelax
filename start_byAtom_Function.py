@@ -126,7 +126,10 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                 EFG_solvent[t_ind, cation_index, :, :] = EFG_t_nthcation_solvent
         #---------------------------------------------------------
         ### EXPORT DATA        
-        for EFG, efg_source in zip([EFG_cation, EFG_anion, EFG_solvent], [cation, anion, solvent]):
+        EFG_total = EFG_cation + EFG_anion + EFG_solvent
+        EFGs = [EFG_cation, EFG_anion, EFG_solvent, EFG_total]
+        efg_sources = [cation, anion, solvent, "total"]
+        for EFG, efg_source in zip(EFGs, efg_sources):
             Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
             Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
             

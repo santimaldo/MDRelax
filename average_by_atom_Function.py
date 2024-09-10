@@ -15,6 +15,7 @@ from scipy.signal import savgol_filter
 from scipy.integrate import cumulative_trapezoid, simpson
 from pathlib import Path
 import time
+from pathlib import Path
 from Functions import *
 plt.rcParams.update({'font.size': 12})
     
@@ -86,15 +87,17 @@ def calculate_ACF(path_MDrelax,
     Nruns = len(runs)
     
     t0 = time.time()
-    efg_sources = [cation, anion, solvent]
+    efg_sources = [cation, anion, solvent, "total"]
     EFG_cation = np.zeros([3,3, Ntimes, Nruns, Ncations])
     EFG_anion = np.zeros([3,3, Ntimes, Nruns, Ncations])
     EFG_solvent = np.zeros([3,3, Ntimes, Nruns, Ncations])
+    EFG_total = np.zeros([3,3, Ntimes, Nruns, Ncations])
     acf_cation = np.zeros([Ntimes, Nruns, Ncations])
     acf_anion = np.zeros([Ntimes, Nruns, Ncations])
     acf_solvent = np.zeros([Ntimes, Nruns, Ncations])
+    acf_total = np.zeros([Ntimes, Nruns, Ncations])
     efg_variance = np.zeros([Nruns, Ncations])
-    acf_means = np.zeros([Ntimes, Nruns])
+    acf_total_mean = np.zeros([Ntimes, Nruns])
     run_ind = -1
     print("Reading files...")
     # Loop sobre runs para calcular ACF
@@ -135,24 +138,21 @@ def calculate_ACF(path_MDrelax,
     #Calculo ACF============================================== 
     #-------------------------------------------
     # calculating variance:
-    efg_squared = np.sum((EFG_cation+EFG_anion+EFG_solvent)*
-                        (EFG_cation+EFG_anion+EFG_solvent),
-                        axis=(0,1))
+    efg_squared = np.sum(EFG_total*EFG_total, axis=(0,1))
     # efg_variance is the squared efg averaged over time:
     # shape: (Nruns, Ncations),
     efg_variance = np.mean(efg_squared, axis=0)
     #-------------------------------------------
     print("Calculating ACF...")        
 
+    # calculate total ACF:
+    print(rf"ACF with EFG_total")    
+    acf_total = Autocorrelate(tau, EFG_total)
 
-    t0 = time.time()
     # calculate only if a cation is a possible efg source
     print(rf"ACF with EFG-source: {cation}")
     if Ncations>1:     
-        tt0 = time.time()
         acf_cation = Autocorrelate(tau, EFG_cation)
-        # ttn = time.time()
-        # print(f"--- time for calculation: {ttn-tt0} s")
     else:
         print(rf"There is only one {cation}. It can't be an EFG source")
 
@@ -178,20 +178,24 @@ def calculate_ACF(path_MDrelax,
     # efg_variance_mean_over_cations.shape = [Ntimes]
     efg_variance_mean_over_cations = np.mean(efg_variance, axis=1)
         
+    acf_total_mean = np.mean(acf_total, axis=2)
     acf_cation_mean = np.mean(acf_cation, axis=2)
     acf_anion_mean = np.mean(acf_anion, axis=2)
     acf_solvent_mean = np.mean(acf_solvent, axis=2)
-    acf_means = acf_cation_mean+ acf_anion_mean + acf_solvent_mean
+    
+    # calculating cross product terms of ACF
+    acf_cross = acf_total - (acf_cation+acf_anion+acf_solvent)
+    acf_cross_mean = np.mean(acf_cross, axis=2)
 
     run_ind = -1
     for run in runs:    
         run_ind += 1   
         # Create a figure with 1 row and 3 columns for cation, anion, solvent
-        fig_subplots, ax_subplots = plt.subplots(1, 3, figsize=(20, 8), num=(run_ind+1)*10)    
+        fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=(run_ind+1)*10)    
         # Create the separate figure for the mean ACF plot
         fig_mean, ax_mean = plt.subplots(num=(run_ind+1)*100, figsize=(8, 6))    
         # Assign the axes for the subplots
-        ax_cation, ax_anion, ax_solvent = ax_subplots
+        ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots
         
         # Plot cation data
         for nn in range(Ncations):
@@ -205,32 +209,34 @@ def calculate_ACF(path_MDrelax,
         for nn in range(Ncations):
             ax_solvent.plot(tau, acf_solvent[:,run_ind, nn],
                             label=f"{cation}{nn+1}", lw=2, alpha=0.5)
+        # Plot cross-terms data
+        for nn in range(Ncations):
+            ax_cros.plot(tau, acf_cross[:,run_ind, nn],
+                            label=f"{cation}{nn+1}", lw=2, alpha=0.5)                                    
         
         # Plot means in each graph
         ax_cation.plot(tau, acf_cation_mean[:,run_ind], label="Mean", lw=3, color='red')
         ax_anion.plot(tau, acf_anion_mean[:,run_ind], label="Mean", lw=3, color='blue')    
         ax_solvent.plot(tau, acf_solvent_mean[:,run_ind], label="Mean", lw=3, color='dimgrey')
-
-        # # Set y-axis formatter to scientific notation with 1 decimal
-        # formatter = ticker.ScalarFormatter(useMathText=True)
-        # formatter.set_powerlimits((-1, 1))  # Use scientific notation for small/large numbers
-        # formatter.set_scientific(True)
-        # formatter.set_useOffset(False)
-        
+        ax_cross.plot(tau, acf_cross_mean[:,run_ind], label="Mean", lw=3, color='orange')
+                
         # Plot all efg-sources in a single graph
-        ax_mean.plot(tau, acf_means[:, run_ind], color='k', lw=3, label='Total ACF')
+        ax_mean.plot(tau, acf_total_mean[:, run_ind], color='k', lw=3, label='Total ACF')
+        ax_mean.plot(tau, acf_cross_mean[:, run_ind], color='orange', lw=2, label=f'EFG-source: {solvent}')
         ax_mean.plot(tau, acf_cation_mean[:, run_ind], color='red', lw=2, label=f'EFG-source: {cation}')    
         ax_mean.plot(tau, acf_anion_mean[:, run_ind], color='blue', lw=2, label=f'EFG-source: {anion}')
         ax_mean.plot(tau, acf_solvent_mean[:, run_ind], color='grey', lw=2, label=f'EFG-source: {solvent}')
         
+        
         # Customize the subplots (cation, anion, solvent)
-        for ax_i, source, color in zip([ax_cation, ax_anion, ax_solvent], 
-                                    [cation, anion, solvent], 
-                                    ['red', 'blue', 'dimgrey']):
+        titles = [f"EFG-source: {s}" for s in [cation, anion, solvent]]
+        titles += ["Cross-terms of ACF"]
+        colors = ['red', 'blue', 'dimgrey', 'orange']
+        for ax_i, title, color in zip(ax_subplors, labels, colors):
             ax_i.axhline(0, color='k', ls='--')
             ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=14)
             ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=14)    
-            ax_i.set_title(f"EFG-source: {source}")
+            ax_i.set_title(title)
             ax_i.legend()
             
         title = f"{solvent}-{salt} : run: {run}.    "\
@@ -255,7 +261,7 @@ def calculate_ACF(path_MDrelax,
         # Saving Data -------------------------------------
         # guardo autocorrelaciones promedio
         data = np.array([tau, 
-                        acf_means[:, run_ind],
+                        acf_total_mean[:, run_ind],
                         acf_cation_mean[:, run_ind],
                         acf_anion_mean[:, run_ind], 
                         acf_solvent_mean[:, run_ind]]).T
@@ -292,7 +298,7 @@ def calculate_ACF(path_MDrelax,
                 lw=2, color="grey")                                   
         
         # Primero promedio y luego integro:    
-        data = acf_means[:, run_ind]
+        data = acf_total_mean[:, run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)
         cumulative_promedio = integral/efg_variance_mean_over_cations[run_ind]
         # grafico    
@@ -327,14 +333,14 @@ def calculate_ACF(path_MDrelax,
     for run in runs:    
         run_ind += 1    
         if run_ind == 0:  
-            ax.plot(tau, acf_means[:, run_ind], label="runs", 
+            ax.plot(tau, acf_total_mean[:, run_ind], label="runs", 
                     lw=2, color='grey', alpha=0.5)
         else:  
-            ax.plot(tau, acf_means[:, run_ind], 
+            ax.plot(tau, acf_total_mean[:, run_ind], 
                     lw=2, color='grey', alpha=0.5)
                 
     # compute the mean over runs:            
-    acf_mean = np.mean(acf_means, axis=1)
+    acf_mean = np.mean(acf_total_mean, axis=1)
     ax.plot(tau, acf_mean, label=f"Mean over runs", lw=3, color='k')
 
     ax.axhline(0, color='k', ls='--')
@@ -355,7 +361,7 @@ def calculate_ACF(path_MDrelax,
     run_ind = -1
     for run in runs:    
         run_ind += 1        
-        data = acf_means[:, run_ind]
+        data = acf_total_mean[:, run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)    
         cumulative = integral/efg_variance_mean_over_cations[run_ind]
         if run_ind == 0:        
