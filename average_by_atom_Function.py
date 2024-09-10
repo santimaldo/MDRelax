@@ -197,6 +197,7 @@ def calculate_ACF(path_MDrelax,
 
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
+    efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_runs)
     header = f"EFG variance: mean over runs.\t"\
               "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
     np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
