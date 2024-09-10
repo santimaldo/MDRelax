@@ -195,7 +195,7 @@ def calculate_ACF(path_MDrelax,
         # Create the separate figure for the mean ACF plot
         fig_mean, ax_mean = plt.subplots(num=(run_ind+1)*100, figsize=(8, 6))    
         # Assign the axes for the subplots
-        ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots
+        ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots.flatten()
         
         # Plot cation data
         for nn in range(Ncations):

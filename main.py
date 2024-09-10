@@ -26,7 +26,7 @@ cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
 Ncations = 1 # numero de Li+
 
-runs_inds = range(6,8)
+runs_inds = range(6,7)
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
