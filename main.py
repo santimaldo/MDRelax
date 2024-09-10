@@ -18,15 +18,15 @@ import time
 # DME - NoAnion
 # path_Gromacs = "/home/santi/mendieta/DME_no-anion/"
 # path_MDrelax = "/home/santi/MD/MDRelax_results/test/"
-path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME_PS/"
-path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_PS/"
+path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME_no-anion/"
+path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_no-anion/"
 
 cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
 Ncations = 1 # numero de Li+
 
-runs_inds = range(10,11)
+runs_inds = range(6,7)
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
