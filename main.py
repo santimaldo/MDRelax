@@ -55,7 +55,17 @@ t0 = time.time()
 calculate_ACF(path_MDrelax,
               savepath = path_MDrelax,
               species = [cation, anion, solvent],
-              species_itp = [cation_itp, anion_itp, solvent_itp],
+              species_itp = [cation_itp, anion_itp, solvent_itp],              
+              Ncations = Ncations,
+              runs_prefix = runs_prefix,
+              runs_suffix = runs_suffix)             
+print(f"ACF time: {time.time()-t0:.0f} s")
+
+
+t0 = time.time()
+calculate_ACF(path_MDrelax,
+              savepath = path_MDrelax,
+              species = [cation, anion, solvent],              
               salt = salt,
               Ncations = Ncations,
               runs_prefix = runs_prefix,

@@ -60,14 +60,10 @@ Ncations = 1
 
 def calculate_ACF(path_MDrelax,
                   savepath = None,
-                  species = ["cation", "anion", "solvent"],
-                  species_itp = ["Li","none", "DME_7CB8A2"],
+                  species = ["cation", "anion", "solvent"],                  
                   Ncations = 1,
                   runs_prefix = "HQ",
-                  runs_suffix = None,
-                  trajectory_format = ".trr",
-                  topology_format = ".gro",
-                  salt = r"Li$_2$S$_6$"
+                  runs_suffix = None,                                    
                   ):
     """
     Reads EFG files and calculate ACF functions, plot the results
@@ -78,6 +74,8 @@ def calculate_ACF(path_MDrelax,
     print("="*33)
     if savepath is None:
         savepath = path_MDrelax 
+    # unpack species:
+    cation, anion, solvent = species
     # creates the savepath if it doesn't exist
     Path(f"{savepath}/Figures").mkdir(parents=True, exist_ok=True)
     runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]
@@ -85,6 +83,7 @@ def calculate_ACF(path_MDrelax,
     Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")    
     # Number of runs
     Nruns = len(runs)
+    
     
     t0 = time.time()
     efg_sources = [cation, anion, solvent, "total"]
@@ -187,6 +186,153 @@ def calculate_ACF(path_MDrelax,
     acf_cross = acf_total - (acf_cation+acf_anion+acf_solvent)
     acf_cross_mean = np.mean(acf_cross, axis=2)
 
+    # Saving Data =======================================
+    # 0) EFG variance:  mean over runs and cations
+    # 1) ACF:           mean over runs and cations
+    # 2) EFG variance:  mean over cations, one per run
+    # 3) ACF:           mean over cations, one per run
+    # 4) ACF:           one per run, all cations data
+
+    # 0)-------------------------------------------------
+    ## save efg_variance_mean_over_runs data
+    header = f"EFG variance: mean over runs.\t"\
+              "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
+    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
+    
+    # 1)-------------------------------------------------
+    ## save acf_mean_over_runs data
+    data = np.array([tau, 
+                     np.mean(acf_total_mean, axis=1),
+                     np.mean(acf_cation_mean, axis=1),
+                     np.mean(acf_anion_mean, axis=1),
+                     np.mean(acf_solvent_mean, axis=1),
+                     np.mean(acf_cross_mean, axis=1)]).T
+    header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}"\
+             f"\tACF_{solvent}\tACF_cross-terms\n"\
+              "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
+    np.savetxt(f"{savepath}/ACF_mean-over-runs.dat", data, header=header)
+
+    
+    run_ind = -1
+    for run in runs:    
+        run_ind += 1  
+        # 2)-----------------------------------------------
+        # guardo varianzas promedio    
+        data = np.array([efg_variance_mean_over_cations[run_ind]])
+        header = f"EFG variance: mean over {Ncations} Li ions.\t"\
+                "Units: e^2*A^-6*(4pi*epsilon0)^-2"
+        np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)        
+        # 3)-----------------------------------------------
+        # guardo autocorrelaciones promedio
+        data = np.array([tau, 
+                        acf_total_mean[:, run_ind],
+                        acf_cation_mean[:, run_ind],
+                        acf_anion_mean[:, run_ind], 
+                        acf_solvent_mean[:, run_ind],
+                        acf_cross_mean[:, run_ind]]).T
+        header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}"\
+                 f"\tACF_{solvent}\tACF_cross-terms\n"\
+                  "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
+        np.savetxt(f"{savepath}/ACF_{run}.dat", data, header=header)
+        # 4)-----------------------------------------------
+        for acf, source in zip([acf_total, acf_cation,
+                            acf_anion, acf_solvent],
+                           ["total", cation, anion, solvent]):                   
+            data += [acf[:, run_ind, nn] for nn in range(Ncations)] 
+            data = np.array([tau]+ data).T
+            header = f"tau\tACF_total for each cation\n"\
+                    "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
+            np.savetxt(f"{savepath}/ACF_efgsource-{source}_{run}_all-cation.dat", data, header=header)
+    return 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def plotACF(path_MDrelax,
+            savepath = None,
+            species = ["cation", "anion", "solvent"],                  
+            Ncations = 1,
+            runs_prefix = "HQ",
+            runs_suffix = None,                                                     
+            salt = r"Li$_2$S$_6$"):
+    """
+    Read acf data and plot 
+    """    
+    # unpack species:
+    cation, anion, solvent = species
+    # define savepath
+    if savepath is None:
+        savepath = path_MDrelax 
+    runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]
+    # Number of time steps
+    Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")    
+    # Number of runs
+    Nruns = len(runs)
+
+    #=======================================================
+    #====================READ===============================
+    #=======================================================
+    # 0)-------------------------------------------------
+    ## READ efg_variance_mean_over_runs data    
+    efg_variance_mean_over_runs = np.loadtxt(f"{path_MDrelax}/EFG_variance_mean-over-runs.dat")
+    
+    # 1)-------------------------------------------------
+    ## read acf_mean_over_runs data    
+    tau, acf_mean = np.loadtxt(f"{path_MDrelax}/ACF_mean-over-runs.dat")
+    
+    acf_cation = np.zeros([Ntimes, Nruns, Ncations])
+    acf_anion = np.zeros([Ntimes, Nruns, Ncations])
+    acf_solvent = np.zeros([Ntimes, Nruns, Ncations])
+    acf_total = np.zeros([Ntimes, Nruns, Ncations])
+    efg_variance = np.zeros([Nruns, Ncations])
+
+    run_ind = -1
+    for run in runs:    
+        run_ind += 1  
+        # 2)-----------------------------------------------
+        # guardo varianzas promedio            
+        efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")[:,1:]
+        # 3)-----------------------------------------------
+        # guardo autocorrelaciones promedio        
+        # np.loadtxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
+        # 4)-----------------------------------------------
+        acf_total[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-total_{run}_all-cation.dat")[:,1:]
+        acf_cation[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-cation_{run}_all-cation.dat")[:,1:]
+        acf_anion[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-anion_{run}_all-cation.dat")[:,1:]
+        acf_solvent[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-solvent_{run}_all-cation.dat")[:,1:]  
+
+    #------------------------------------------------------
+    #------------------------------------------------------
+    #------------------------------------------------------
+    # Calculte
+    acf_cross = acf_total - (acf_cation+acf_anion+acf_solvent)
+
+    acf_total_mean = np.mean(acf_total, axis=2)
+    acf_cation_mean = np.mean(acf_cation, axis=2)
+    acf_anion_mean = np.mean(acf_anion, axis=2)
+    acf_solvent_mean = np.mean(acf_solvent, axis=2)
+    acf_cross_mean = np.mean(acf_cross, axis=2)
+
+
+    #=======================================================
+    #====================PLOTS==============================
+    #=======================================================
     run_ind = -1
     for run in runs:    
         run_ind += 1   
@@ -211,7 +357,7 @@ def calculate_ACF(path_MDrelax,
                             label=f"{cation}{nn+1}", lw=2, alpha=0.5)
         # Plot cross-terms data
         for nn in range(Ncations):
-            ax_cros.plot(tau, acf_cross[:,run_ind, nn],
+            ax_cross.plot(tau, acf_cross[:,run_ind, nn],
                             label=f"{cation}{nn+1}", lw=2, alpha=0.5)                                    
         
         # Plot means in each graph
@@ -231,8 +377,8 @@ def calculate_ACF(path_MDrelax,
         # Customize the subplots (cation, anion, solvent)
         titles = [f"EFG-source: {s}" for s in [cation, anion, solvent]]
         titles += ["Cross-terms of ACF"]
-        colors = ['red', 'blue', 'dimgrey', 'orange']
-        for ax_i, title, color in zip(ax_subplors, labels, colors):
+        # colors = ['red', 'blue', 'dimgrey', 'orange']
+        for ax_i, title in zip(ax_subplots, titles):
             ax_i.axhline(0, color='k', ls='--')
             ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=14)
             ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=14)    
@@ -256,25 +402,6 @@ def calculate_ACF(path_MDrelax,
 
         fig_subplots.savefig(f"{savepath}/Figures/ACF_bySource_{run}.png")
         fig_mean.savefig(f"{savepath}/Figures/ACF_{run}.png")
-
-
-        # Saving Data -------------------------------------
-        # guardo autocorrelaciones promedio
-        data = np.array([tau, 
-                        acf_total_mean[:, run_ind],
-                        acf_cation_mean[:, run_ind],
-                        acf_anion_mean[:, run_ind], 
-                        acf_solvent_mean[:, run_ind]]).T
-        header = f"tau\tACF_total\tACF_{cation}\tACF_{anion}\tACF_{solvent}\n"\
-                "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
-        np.savetxt(f"{savepath}/ACF_{run}.dat", data, header=header)
-        
-        # guardo varianzas promedio    
-        data = np.array([efg_variance_mean_over_cations[run_ind]])
-        header = f"EFG variance: mean over {Ncations} Li ions.\t"\
-                "Units: e^2*A^-6*(4pi*epsilon0)^-2"
-        np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
-
 
         #FIGURA: ACF cumulativos==============================
         fig, ax = plt.subplots(num=(run_ind+1)*10000)
@@ -351,11 +478,6 @@ def calculate_ACF(path_MDrelax,
     fig.tight_layout()
     fig.savefig(f"{savepath}/Figures/ACF_mean-over-runs.png")
 
-    data = np.array([tau, acf_mean]).T
-    header = r"tau [ps]\tACF(tau) [e^2A^{-6}(4pi epsilon_0)^{-2}]"
-    np.savetxt(f"{savepath}/ACF_mean-over-runs.dat", data, header=header)
-
-
     # FIGURA: Cumulatives---------------------------------------------------
     fig, ax = plt.subplots(num=37817817174681374681354132541354)
     run_ind = -1
@@ -402,9 +524,5 @@ def calculate_ACF(path_MDrelax,
     ax.legend()
     fig.savefig(f"{savepath}/Figures/CorrelationTime_mean-over-runs.png")
 
-    ## save efg_variance_mean_over_runs data
-    header = f"EFG variance: mean over runs.\t"\
-                "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
-    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
     
     return 0
