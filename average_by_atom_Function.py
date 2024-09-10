@@ -197,7 +197,7 @@ def calculate_ACF(path_MDrelax,
 
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
-    efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_runs)
+    efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations)
     header = f"EFG variance: mean over runs.\t"\
               "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
     np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
@@ -241,7 +241,7 @@ def calculate_ACF(path_MDrelax,
         for acf, source in zip([acf_total, acf_cation,
                             acf_anion, acf_solvent],
                            ["total", cation, anion, solvent]):                   
-            data += [acf[:, run_ind, nn] for nn in range(Ncations)] 
+            data = [acf[:, run_ind, nn] for nn in range(Ncations)] 
             data = np.array([tau]+ data).T
             header = f"tau\tACF_total for each cation\n"\
                     "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
@@ -267,7 +267,7 @@ def calculate_ACF(path_MDrelax,
 
 
 
-def plotACF(path_MDrelax,
+def plot_ACF(path_MDrelax,
             savepath = None,
             species = ["cation", "anion", "solvent"],                  
             Ncations = 1,
@@ -297,7 +297,9 @@ def plotACF(path_MDrelax,
     
     # 1)-------------------------------------------------
     ## read acf_mean_over_runs data    
-    tau, acf_mean = np.loadtxt(f"{path_MDrelax}/ACF_mean-over-runs.dat")
+    data = np.loadtxt(f"{path_MDrelax}/ACF_mean-over-runs.dat")
+    tau = data[:,0]
+    acf_mean = data[:,1:]
     
     acf_cation = np.zeros([Ntimes, Nruns, Ncations])
     acf_anion = np.zeros([Ntimes, Nruns, Ncations])
@@ -310,15 +312,15 @@ def plotACF(path_MDrelax,
         run_ind += 1  
         # 2)-----------------------------------------------
         # guardo varianzas promedio            
-        efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")[:,1:]
+        efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")
         # 3)-----------------------------------------------
         # guardo autocorrelaciones promedio        
         # np.loadtxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
         # 4)-----------------------------------------------
         acf_total[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-total_{run}_all-cation.dat")[:,1:]
-        acf_cation[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-cation_{run}_all-cation.dat")[:,1:]
-        acf_anion[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-anion_{run}_all-cation.dat")[:,1:]
-        acf_solvent[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-solvent_{run}_all-cation.dat")[:,1:]  
+        acf_cation[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{cation}_{run}_all-cation.dat")[:,1:]
+        acf_anion[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{anion}_{run}_all-cation.dat")[:,1:]
+        acf_solvent[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{solvent}_{run}_all-cation.dat")[:,1:]  
 
     #------------------------------------------------------
     #------------------------------------------------------
@@ -371,7 +373,7 @@ def plotACF(path_MDrelax,
                 
         # Plot all efg-sources in a single graph
         ax_mean.plot(tau, acf_total_mean[:, run_ind], color='k', lw=3, label='Total ACF')
-        ax_mean.plot(tau, acf_cross_mean[:, run_ind], color='orange', lw=2, label=f'EFG-source: {solvent}')
+        ax_mean.plot(tau, acf_cross_mean[:, run_ind], color='orange', lw=2, label=f'Cross-terms of ACF')
         ax_mean.plot(tau, acf_cation_mean[:, run_ind], color='red', lw=2, label=f'EFG-source: {cation}')    
         ax_mean.plot(tau, acf_anion_mean[:, run_ind], color='blue', lw=2, label=f'EFG-source: {anion}')
         ax_mean.plot(tau, acf_solvent_mean[:, run_ind], color='grey', lw=2, label=f'EFG-source: {solvent}')
@@ -381,7 +383,7 @@ def plotACF(path_MDrelax,
         titles = [f"EFG-source: {s}" for s in [cation, anion, solvent]]
         titles += ["Cross-terms of ACF"]
         # colors = ['red', 'blue', 'dimgrey', 'orange']
-        for ax_i, title in zip(ax_subplots, titles):
+        for ax_i, title in zip(ax_subplots.flatten(), titles):
             ax_i.axhline(0, color='k', ls='--')
             ax_i.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=14)
             ax_i.set_xlabel(r"$\tau$ [ps]", fontsize=14)    
