@@ -16,28 +16,45 @@ from Functions import *
 
 
 # DME - Li2S6
-path_Gromacs = "/home/santi/mendieta/DME/"
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
-cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","S6", "DME"] # names
+# path_Gromacs = "/home/santi/mendieta/DME/"
+# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
+# cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+# cation, anion, solvent = ["Li","S6", "DME"] # names
+# Ncations = 4 # numero de Li+
+# runs_inds = range(6,11)
+# mdp_file = "HQ"
+# MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+
 
 # DME - LiTFSI
 # path_Gromacs = "/home/santi/mendieta/DME_LiTFSI/"
 # path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
 # cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
 # cation, anion, solvent = ["Li","TFS", "DME"] # names
+# Ncations = 4 # numero de Li+
+# runs_inds = range(6,11)
+# mdp_file = "HQ"
+# MDfiles = [f"HQ.{i}" for i in runs_inds]
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
-# the times from 0 to initial_time (ps) are dropped
-initial_time = 1 # ps
 
-runs_inds = range(6,11)
+
+# DME - NoAnion
+path_Gromacs = "/home/santi/mendieta/DME_no-anion/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion/"
+cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","none", "DME"] # names
+Ncations = 1 # numero de Li+
+
+runs_inds = range(3,10)
 mdp_file = "HQ"
-MDfiles = [f"HQ.{i}" for i in runs_inds]
+MDfiles = [f"HQ.{i+0.5:.1f}" for i in runs_inds]
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 
 trajectory_format = ".trr" # ".trr" or ".xtc"
 topology_format = ".gro" # ".tpr" or ".gro"
-Ncations = 4 # numero de Li+
+
 
 
 #---------------------------------------------------

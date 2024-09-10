@@ -35,9 +35,12 @@ name0 = "DME-LiTFSI"
 path0 = "/home/santi/MD/MDRelax_results/DME_LiTFSI/test/"
 
 # ACF 1
-name1 = r"DME-$Li_2S_6$"
-# path1 = "/home/santi/MD/GromacsFiles/2024-08_DME_3rd-test/MDRelax/"
-path1 = "/home/santi/MD/MDRelax_results/DME_PS/"
+# name1 = r"DME-$Li_2S_6$"
+# path1 = "/home/santi/MD/MDRelax_results/DME_PS/"
+
+# ACF 1
+name1 = r"DME-$Li^+$"
+path1 = "/home/santi/MD/MDRelax_results/DME_no-anion/"
 
 
 # numero de exponenciales
@@ -125,7 +128,7 @@ for idx, (path, name) in enumerate(zip([path0, path1], [name0, name1])):
 # Formatting fit plot
 # ax.set_xlim([-0.1*x_data[-1], 1.3*x_data[-1]])
 ax.set_xlabel(r'$\tau$ [ps]')
-ax.set_ylabel('ACF [atomic units]')   
+ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$")
 ax.axhline(0, color='black', linestyle='--', linewidth=1)
 legend_title = r"$ACF(\tau) = \sum_j A_j \exp^{-\tau/\tau_j}$"    
 ax.legend(title=legend_title, fontsize=14)

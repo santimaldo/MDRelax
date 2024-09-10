@@ -92,6 +92,8 @@ def get_Charges(species_list, path):
 
     charges_df = pd.DataFrame(columns=["residue", "AtomType", "Charge"])#, "atom", "residue"])
     for species in species_list:
+        # si no hay anion, salteo ese tipo de atomo
+        if "none" in species.lower(): continue
         with open(f"{path}park.ff/{species}.itp", "r") as f:    
             with open(f"{path}/{species}.charges", "w") as wf:
                 for ii in range(1000):        

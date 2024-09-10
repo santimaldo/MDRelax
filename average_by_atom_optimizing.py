@@ -20,15 +20,18 @@ plt.rcParams.update({'font.size': 12})
 
 #%%
 
-# DME - Li2S6
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
-savepath = path_MDrelax
-cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","S6", "DME"] # names
-salt = r"Li$_2$S$_6$"
-runs_inds = range(6,11)
-mdp_file = "HQ"
-runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+# # DME - Li2S6
+# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
+# savepath = path_MDrelax
+# cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+# cation, anion, solvent = ["Li","S6", "DME"] # names
+# salt = r"Li$_2$S$_6$"
+# runs_inds = range(6,11)
+# mdp_file = "HQ"
+# runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+# # Number of Li ions in a run 
+# Ncations = 4
+
 
 # DME - LiTFSI
 # path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
@@ -39,13 +42,27 @@ runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 # runs_inds = range(6,11)
 # mdp_file = "HQ"
 # runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+# # Number of Li ions in a run 
+# Ncations = 4
+
+
+# DME - No anion
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion/"
+savepath = path_MDrelax
+cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","none", "DME"] # names
+salt = r"Li$^+$"
+runs_inds = np.delete(np.arange(3.5,10.1,0.5), [1,3])
+mdp_file = "HQ"
+runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
+# Number of Li ions in a run 
+Ncations = 1
+
 
 # Number of time steps
 Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")
 # Number of runs
 Nruns = len(runs)
-# Number of Li ions in a run 
-Ncations = 4
 
 #%%
 t0 = time.time()
@@ -66,8 +83,9 @@ for run in runs:
     run_ind += 1    
     efg_source_index = -1
     for efg_source in efg_sources: 
-        efg_source_index += 1
+        efg_source_index += 1                
         filename = f"{path_MDrelax}/EFG_{efg_source}_{run}.dat"
+        print("reading ", filename)
         data = np.loadtxt(filename)[:Ntimes, :]        
         # read the time only once:
         if (run_ind==0) and (efg_source_index==0):
@@ -106,14 +124,24 @@ efg_variance = np.mean(efg_squared, axis=0)
 #-------------------------------------------
 print("Calculating ACF...")        
 
-print(rf"ACF with EFG-source: {cation}")
-tt0 = time.time()
-acf_cation = Autocorrelate(tau, EFG_cation)
-ttn = time.time()
-print(f"--- time for calculation: {ttn-tt0} s")
 
+t0 = time.time()
+# calculate only if a cation is a possible efg source
+print(rf"ACF with EFG-source: {cation}")
+if Ncations>1:     
+    tt0 = time.time()
+    acf_cation = Autocorrelate(tau, EFG_cation)
+    # ttn = time.time()
+    # print(f"--- time for calculation: {ttn-tt0} s")
+else:
+    print(rf"There is only one {cation}. It can't be an EFG source")
+
+# calculate only if anions exist
 print(rf"ACF with EFG-source: {anion}")
-acf_anion = Autocorrelate(tau, EFG_anion)
+if "none" in anion.lower():
+    print("since no anion is present, this step is skipped")
+else:    
+    acf_anion = Autocorrelate(tau, EFG_anion)
 
 print(rf"ACF with EFG-source: {solvent}")
 acf_solvent = Autocorrelate(tau, EFG_solvent)
@@ -278,8 +306,12 @@ fig, ax = plt.subplots(num=3781781746813134613543546)
 run_ind = -1
 for run in runs:    
     run_ind += 1    
-    ax.plot(tau, acf_means[:, run_ind], label=f"run: {runs[run_ind]}", 
-            lw=2, color='grey', alpha=0.5)
+    if run_ind == 0:  
+        ax.plot(tau, acf_means[:, run_ind], label="runs", 
+                lw=2, color='grey', alpha=0.5)
+    else:  
+        ax.plot(tau, acf_means[:, run_ind], 
+                lw=2, color='grey', alpha=0.5)
 # compute the mean over runs:            
 acf_mean = np.mean(acf_means, axis=1)
 ax.plot(tau, acf_mean, label=f"Mean over runs", lw=3, color='k')
@@ -294,7 +326,7 @@ fig.savefig(f"{savepath}/Figures/ACF_mean-over-runs.png")
 
 data = np.array([tau, acf_mean]).T
 header = r"tau [ps]\tACF(tau) [e^2A^{-6}(4pi epsilon_0)^{-2}]"
-np.savetxt(f"{savepath}/ACF_mean_over_runs.dat", data, header=header)
+np.savetxt(f"{savepath}/ACF_mean-over-runs.dat", data, header=header)
 
 
 # FIGURA: Cumulatives---------------------------------------------------
@@ -305,8 +337,12 @@ for run in runs:
     data = acf_means[:, run_ind]
     integral = cumulative_simpson(data, x=tau, initial=0)    
     cumulative = integral/efg_variance_mean_over_cations[run_ind]
-    ax.plot(tau, cumulative, label=f"run: {runs[run_ind]}",
-            lw=2, color="grey", alpha=0.5)                                   
+    if run_ind == 0:        
+        ax.plot(tau, cumulative, label = "runs",
+            lw=2, color="grey", alpha=0.5)
+    else:
+        ax.plot(tau, cumulative,
+            lw=2, color="grey", alpha=0.5)                               
     
 # compute the mean over runs:            
 ######## ACA NO SE SI POMEDIAR LA VARIANZA ANTES O DESPUES DE INTEGRAR
