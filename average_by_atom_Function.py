@@ -131,8 +131,10 @@ def calculate_ACF(path_MDrelax,
                     EFG_cation[:,:,:, run_ind, nn] = EFG_nn            
                 elif anion in efg_source:            
                     EFG_anion[:,:,:, run_ind, nn] = EFG_nn            
-                elif solvent in efg_source:            
-                    EFG_solvent[:,:,:, run_ind, nn] = EFG_nn          
+                elif solvent in efg_source:
+                    EFG_solvent[:,:,:, run_ind, nn] = EFG_nn
+                elif solvent in efg_source:
+                    EFG_solvent[:,:,:, run_ind, nn] = EFG_nn 
                 
     #Calculo ACF============================================== 
     #-------------------------------------------
