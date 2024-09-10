@@ -54,8 +54,7 @@ topology_format = ".gro" # ".tpr" or ".gro"
 t0 = time.time()
 calculate_ACF(path_MDrelax,
               savepath = path_MDrelax,
-              species = [cation, anion, solvent],
-              species_itp = [cation_itp, anion_itp, solvent_itp],              
+              species = [cation, anion, solvent],              
               Ncations = Ncations,
               runs_prefix = runs_prefix,
               runs_suffix = runs_suffix)             
