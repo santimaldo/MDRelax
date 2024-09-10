@@ -18,8 +18,8 @@ import time
 # DME - NoAnion
 # path_Gromacs = "/home/santi/mendieta/DME_no-anion/"
 # path_MDrelax = "/home/santi/MD/MDRelax_results/test/"
-path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME-PS/"
-path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME-PS/"
+path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME_PS/"
+path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_PS/"
 
 cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
