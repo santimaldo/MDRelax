@@ -221,7 +221,7 @@ def calculate_ACF(path_MDrelax,
         run_ind += 1  
         # 2)-----------------------------------------------
         # guardo varianzas promedio    
-        data = np.array([efg_variance_mean_over_cations[run_ind]])
+        data = np.array([efg_variance_mean_over_cations])
         header = f"EFG variance: mean over {Ncations} Li ions.\t"\
                 "Units: e^2*A^-6*(4pi*epsilon0)^-2"
         np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)        
@@ -408,31 +408,34 @@ def plot_ACF(path_MDrelax,
         fig_subplots.savefig(f"{savepath}/Figures/ACF_bySource_{run}.png")
         fig_mean.savefig(f"{savepath}/Figures/ACF_{run}.png")
 
-        #FIGURA: ACF cumulativos==============================
+        #---------------------------------------------------------------
+        #FIGURA: ACF cumulativos----------------------------------------
         fig, ax = plt.subplots(num=(run_ind+1)*10000)
         
+        efg_variance_mean_over_cations = np.mean(efg_variance, axis=1)[run_ind]        
+
         data = acf_cation_mean[:,run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)    
-        cumulative = integral/efg_variance_mean_over_cations[run_ind]
+        cumulative = integral/efg_variance_mean_over_cations
         ax.plot(tau, cumulative, label=f'EFG-source: {cation}',
                 lw=2, color="red")
         
         data = acf_anion_mean[:,run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)    
-        cumulative = integral/efg_variance_mean_over_cations[run_ind]
+        cumulative = integral/efg_variance_mean_over_cations
         ax.plot(tau, cumulative, label=f'EFG-source: {anion}',
                 lw=2, color="blue")
 
         data = acf_solvent_mean[:,run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)    
-        cumulative = integral/efg_variance_mean_over_cations[run_ind]
+        cumulative = integral/efg_variance_mean_over_cations
         ax.plot(tau, cumulative, label=f'EFG-source: {solvent}',
                 lw=2, color="grey")                                   
         
         # Primero promedio y luego integro:    
         data = acf_total_mean[:, run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)
-        cumulative_promedio = integral/efg_variance_mean_over_cations[run_ind]
+        cumulative_promedio = integral/efg_variance_mean_over_cations
         # grafico    
         ax.plot(tau, cumulative_promedio, label="Cumulative of ACF mean", lw=4, color='k')         
         ax.legend(title=f"RUN {run_ind}", fontsize=10, loc="upper right")    
@@ -458,6 +461,8 @@ def plot_ACF(path_MDrelax,
         ax.legend()
         fig_subplots.savefig(f"{savepath}/Figures/CorrelationTime_bySource_{run}.png")
         fig_mean.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
+        #---------------------------------------------------------------
+        #---------------------------------------------------------------
     #Finally, the mean of all runs:
     # FIGURA: Autocorrelaciones    
     fig, ax = plt.subplots(num=3781781746813134613543546)
@@ -490,7 +495,7 @@ def plot_ACF(path_MDrelax,
         run_ind += 1        
         data = acf_total_mean[:, run_ind]
         integral = cumulative_simpson(data, x=tau, initial=0)    
-        cumulative = integral/efg_variance_mean_over_cations[run_ind]
+        cumulative = integral/efg_variance_mean_over_cations
         if run_ind == 0:        
             ax.plot(tau, cumulative, label = "runs",
                 lw=2, color="grey", alpha=0.5)

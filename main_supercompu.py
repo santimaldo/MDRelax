@@ -24,9 +24,9 @@ path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_no-
 cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
-Ncations = 1 # numero de Li+
+Ncations = 20 # numero de Li+
 
-runs_inds = range(6,7)
+runs_inds = range(8,11)
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
