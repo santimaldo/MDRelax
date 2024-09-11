@@ -167,12 +167,9 @@ def calculate_ACF(path_MDrelax,
     # calculating variance:
     efg_squared = np.sum(EFG_total*EFG_total, axis=(0,1))
     # efg_variance is the squared efg averaged over time:
-    # shape: (Nruns, Ncations),
+    # shape: (Nruns, Ncations) mean over time
     efg_variance = np.mean(efg_squared, axis=0)
-    #-------------------------------------------
-    # efg_variance_mean_over_cations.shape = [Ntimes]
-    efg_variance_mean_over_cations = np.mean(efg_variance, axis=1)
-        
+    #-------------------------------------------        
     acf_total_mean = np.mean(acf_total, axis=2)
     acf_cation_mean = np.mean(acf_cation, axis=2)
     acf_anion_mean = np.mean(acf_anion, axis=2)
@@ -191,18 +188,10 @@ def calculate_ACF(path_MDrelax,
 
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
-    efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations)
-
-    print("%$#$#$#$&%&%$#"*3)
-    print("efg_variance_mean_over_cations.shape")
-    print(efg_variance_mean_over_cations.shape)
-    print("efg_variance_mean_over_cations.shape")
-    print(efg_variance_mean_over_runs.shape)
-
+    efg_variance_mean_over_runs = np.mean(efg_variance, axis=(0,1))
     header = f"EFG variance: mean over runs.\t"\
               "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
-    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
-    
+    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)    
     # 1)-------------------------------------------------
     ## save acf_mean_over_runs data
     data = np.array([tau, 
@@ -221,8 +210,8 @@ def calculate_ACF(path_MDrelax,
         run_ind += 1  
         # 2)-----------------------------------------------
         # guardo varianzas promedio    
-        data = np.array([efg_variance_mean_over_cations[run_ind]])
-        header = f"EFG variance: mean over {Ncations} Li ions.\t"\
+        data = efg_variance[run_ind,:]
+        header = f"EFG variance for each {Ncations} {cation} cations.\t"\
                 "Units: e^2*A^-6*(4pi*epsilon0)^-2"
         np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
         # 3)-----------------------------------------------
