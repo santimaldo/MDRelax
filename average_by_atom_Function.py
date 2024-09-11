@@ -136,7 +136,33 @@ def calculate_ACF(path_MDrelax,
                 elif "total" in efg_source:
                     EFG_total[:,:,:, run_ind, nn] = EFG_nn 
                 
-    #Calculo ACF============================================== 
+    #Calculo ACF========================================================
+    print("Calculating ACF...")        
+    #-------------------------------------------
+    # calculate total ACF:
+    print(rf"ACF with EFG_total")    
+    acf_total = Autocorrelate(tau, EFG_total)
+    #-------------------------------------------
+    # calculate only if a cation is a possible efg source
+    print(rf"ACF with EFG-source: {cation}")
+    if Ncations>1:     
+        acf_cation = Autocorrelate(tau, EFG_cation)
+    else:
+        print(rf"There is only one {cation}. It can't be an EFG source")
+    #-------------------------------------------
+    # calculate only if anions exist
+    print(rf"ACF with EFG-source: {anion}")
+    if "none" in anion.lower():
+        print("since no anion is present, this step is skipped")
+    else:    
+        acf_anion = Autocorrelate(tau, EFG_anion)
+    #-------------------------------------------
+    print(rf"ACF with EFG-source: {solvent}")
+    acf_solvent = Autocorrelate(tau, EFG_solvent)
+    tn = time.time()
+    print(f"tiempo=   {tn-t0} s") 
+    #===================================================================    
+    # EFG variances
     #-------------------------------------------
     # calculating variance:
     efg_squared = np.sum(EFG_total*EFG_total, axis=(0,1))
@@ -144,38 +170,6 @@ def calculate_ACF(path_MDrelax,
     # shape: (Nruns, Ncations),
     efg_variance = np.mean(efg_squared, axis=0)
     #-------------------------------------------
-    print("Calculating ACF...")        
-
-    # calculate total ACF:
-    print(rf"ACF with EFG_total")    
-    acf_total = Autocorrelate(tau, EFG_total)
-
-    # calculate only if a cation is a possible efg source
-    print(rf"ACF with EFG-source: {cation}")
-    if Ncations>1:     
-        acf_cation = Autocorrelate(tau, EFG_cation)
-    else:
-        print(rf"There is only one {cation}. It can't be an EFG source")
-
-    # calculate only if anions exist
-    print(rf"ACF with EFG-source: {anion}")
-    if "none" in anion.lower():
-        print("since no anion is present, this step is skipped")
-    else:    
-        acf_anion = Autocorrelate(tau, EFG_anion)
-
-    print(rf"ACF with EFG-source: {solvent}")
-    acf_solvent = Autocorrelate(tau, EFG_solvent)
-    tn = time.time()
-    print(f"tiempo=   {tn-t0} s") 
-
-    #-------------------------------------------
-    # calculating means:
-
-    #===================================================================    
-    #FIGURA: ACF:  -----------------------
-    # Mean values over carions:
-    #
     # efg_variance_mean_over_cations.shape = [Ntimes]
     efg_variance_mean_over_cations = np.mean(efg_variance, axis=1)
         
@@ -198,6 +192,13 @@ def calculate_ACF(path_MDrelax,
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
     efg_variance_mean_over_runs = np.mean(efg_variance_mean_over_cations)
+
+    print("%$#$#$#$&%&%$#"*3)
+    print("efg_variance_mean_over_cations.shape")
+    print(efg_variance_mean_over_cations.shape)
+    print("efg_variance_mean_over_cations.shape")
+    print(efg_variance_mean_over_runs.shape)
+
     header = f"EFG variance: mean over runs.\t"\
               "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
     np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)
@@ -214,17 +215,16 @@ def calculate_ACF(path_MDrelax,
              f"\tACF_{solvent}\tACF_cross-terms\n"\
               "Units: time=ps,   ACF=e^2*A^-6*(4pi*epsilon0)^-2"
     np.savetxt(f"{savepath}/ACF_mean-over-runs.dat", data, header=header)
-
-    
+    #------------------------------------------------------
     run_ind = -1
     for run in runs:    
         run_ind += 1  
         # 2)-----------------------------------------------
         # guardo varianzas promedio    
-        data = np.array([efg_variance_mean_over_cations])
+        data = np.array([efg_variance_mean_over_cations[run_ind]])
         header = f"EFG variance: mean over {Ncations} Li ions.\t"\
                 "Units: e^2*A^-6*(4pi*epsilon0)^-2"
-        np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)        
+        np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
         # 3)-----------------------------------------------
         # guardo autocorrelaciones promedio
         data = np.array([tau, 
