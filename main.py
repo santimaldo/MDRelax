@@ -38,18 +38,18 @@ trajectory_format = ".trr" # ".trr" or ".xtc"
 topology_format = ".gro" # ".tpr" or ".gro"
 
 
-t0 = time.time()
-get_EFG_data(path_Gromacs, path_MDrelax,
-             species = [cation, anion, solvent],
-             species_itp = [cation_itp, anion_itp, solvent_itp],
-             Ncations = Ncations,
-             runs_prefix = runs_prefix,
-             runs_suffix = runs_suffix,
-             runs_suffix_gro = runs_suffix_gro,
-             trajectory_format = trajectory_format,
-             topology_format = topology_format
-             )
-print(f"EFG time: {time.time()-t0:.0f} s")
+# t0 = time.time()
+# get_EFG_data(path_Gromacs, path_MDrelax,
+#              species = [cation, anion, solvent],
+#              species_itp = [cation_itp, anion_itp, solvent_itp],
+#              Ncations = Ncations,
+#              runs_prefix = runs_prefix,
+#              runs_suffix = runs_suffix,
+#              runs_suffix_gro = runs_suffix_gro,
+#              trajectory_format = trajectory_format,
+#              topology_format = topology_format
+#              )
+# print(f"EFG time: {time.time()-t0:.0f} s")
 
 
 t0 = time.time()

@@ -266,6 +266,9 @@ def plot_ACF(path_MDrelax,
     """
     Read acf data and plot 
     """    
+    print("="*33)
+    print("="*10+f"plot_ACF"+"="*10)
+    print("="*33)
     # unpack species:
     cation, anion, solvent = species
     # define savepath
@@ -298,7 +301,7 @@ def plot_ACF(path_MDrelax,
 
     run_ind = -1
     for run in runs:    
-        run_ind += 1  
+        run_ind += 1          
         # 2)-----------------------------------------------
         # guardo varianzas promedio            
         efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")
