@@ -8,8 +8,6 @@ Created on Tue Sep  10 12024
 read MD data and calculate ACF functions
 """
 
-
-
 import numpy as np
 from start_byAtom_Function import get_EFG_data
 from average_by_atom_Function import calculate_ACF, plot_ACF
@@ -130,12 +128,12 @@ print(f"ACF time: {time.time()-t0:.0f} s")
 path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME_no-anion_bigbox/"
 path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME__no-anion_bigbox/"
 
-cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
 Ncations = 20 # numero de Li+
 
-runs_inds = range(6,11)
+runs_inds = range(5,11)
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
