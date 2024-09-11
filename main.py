@@ -16,17 +16,18 @@ from average_by_atom_Function import calculate_ACF, plot_ACF
 import time
 
 # DME - NoAnion
-# path_Gromacs = "/home/santi/mendieta/DME_no-anion/"
-# path_MDrelax = "/home/santi/MD/MDRelax_results/test/"
-path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME_no-anion_bigbox/"
-path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_no-anion_bigbox/"
+path_Gromacs = "/home/santi/mendieta/DME/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
+# path_Gromacs = "C:/Users/Usuario/Documents/SantiM/MDdata/mendieta/DME/"
+# path_MDrelax = "C:/Users/Usuario/Documents/SantiM/MDdata/MDrelax_results/DME_PS/"
 
-cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","none", "DME"] # names
-salt = r"Li$^+$"
-Ncations = 1 # numero de Li+
+cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","S6", "DME"] # names
+# salt = r"Li$^+$"
+salt = r"Li$_2$S$_6$"
+Ncations = 4 # numero de Li+
 
-runs_inds = range(6,7)
+runs_inds = range(6,11)
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
