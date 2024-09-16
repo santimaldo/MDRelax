@@ -78,7 +78,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                                             Charges['AtomType']):
                     q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
                     
-                    group = u.select_atoms(f"name {AtomType}")                                
+                    group = u.select_atoms(f"name {AtomType}")                               
+                    if group.n_atoms==0: continue
                     # Calculate distances------------------
                     # Put Li in the center of the universe
                     cation_in_center = cation_in_group.position - center
@@ -117,7 +118,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                         
                     if anion in residue:
                         EFG_t_nthcation_anion += EFG_t_AtomType                    
-                    if cation in residue:
+                    elif cation in residue:
                         EFG_t_nthcation_cation += EFG_t_AtomType
                     else:
                         EFG_t_nthcation_solvent += EFG_t_AtomType                    
