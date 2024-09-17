@@ -140,7 +140,7 @@ def calculate_ACF(path_MDrelax,
     print("Calculating ACF...")        
     #-------------------------------------------
     # calculate total ACF:
-    print(rf"ACF with EFG_total")    
+    print(rf"ACF with EFG_total")        
     acf_total = Autocorrelate(tau, EFG_total)
     #-------------------------------------------
     # calculate only if a cation is a possible efg source
@@ -334,7 +334,7 @@ def plot_ACF(path_MDrelax,
     for run in runs:    
         run_ind += 1   
         # Create a figure with 1 row and 3 columns for cation, anion, solvent
-        fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=(run_ind+1)*10)    
+        fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=(run_ind+1)*10)
         # Create the separate figure for the mean ACF plot
         fig_mean, ax_mean = plt.subplots(num=(run_ind+1)*100, figsize=(8, 6))    
         # Assign the axes for the subplots
@@ -450,13 +450,12 @@ def plot_ACF(path_MDrelax,
                 ls='--', color='grey', lw = 1.5,
                 label=f"~{corr_time:.1f} ps")
 
-        ax.legend()
-        fig_subplots.savefig(f"{savepath}/Figures/CorrelationTime_bySource_{run}.png")
-        fig_mean.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
+        ax.legend()        
+        fig.savefig(f"{savepath}/Figures/CorrelationTime_{run}.png")
         #---------------------------------------------------------------
         #---------------------------------------------------------------
     #Finally, the mean of all runs:
-    # FIGURA: Autocorrelaciones    
+    # FIGURA: Autocorrelation (TOTAL mean over runs)  
     fig, ax = plt.subplots(num=3781781746813134613543546)
     run_ind = -1
     for run in runs:    
@@ -479,6 +478,40 @@ def plot_ACF(path_MDrelax,
     fig.suptitle(fr"{solvent}-{salt} EFG Autocorrelation Function", fontsize=16)
     fig.tight_layout()
     fig.savefig(f"{savepath}/Figures/ACF_mean-over-runs.png")
+    
+    #-----------------------------------------------------------------------
+    # FIGURA: Mean over runs, by source    
+    fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=445454787878)
+    fig_together, ax_together = plt.subplots(num=3781781)
+    run_ind = -1
+    # Assign the axes for the subplots
+    ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots.flatten()    
+    # Plot cation data
+    for ax in [ax_cation, ax_together]:
+        ax.plot(tau, np.mean(acf_cation_mean, axis=1), 'r',
+                    label=f"EFG-source: {cation}", lw=2)
+    for ax in [ax_anion, ax_together]:                    
+        ax.plot(tau, np.mean(acf_anion_mean, axis=1), 'b',
+                    label=f"EFG-source: {anion}", lw=2)
+    for ax in [ax_solvent, ax_together]:                    
+        ax.plot(tau, np.mean(acf_solvent_mean, axis=1), 'dimgrey',
+                    label=f"EFG-source: {solvent}", lw=2)
+    for ax in [ax_cross, ax_together]:                                        
+        ax.plot(tau, np.mean(acf_cross_mean, axis=1), 'orange',
+                    label=f"Cross-terms of EFG-ACF", lw=2)
+    ax_together.plot(tau, acf_mean, 'k', label=f"Total ACF", lw=2)                    
+    for ax in list(ax_subplots.flatten())+[ax_together]:
+        ax.axhline(0, color='k', ls='--')
+        ax.set_ylabel(r"ACF $[e^2\AA^{-6}(4\pi\varepsilon_0)^{-2}]$", fontsize=16)
+        ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+        ax.legend()
+    title=fr"{solvent}-{salt} EFG Autocorrelation Function by source"+"\n mean over runs"        
+    fig_subplots.suptitle(title, fontsize=16)
+    fig_together.suptitle(title, fontsize=16)
+    fig_subplots.tight_layout()
+    fig_together.tight_layout()
+    fig_subplots.savefig(f"{savepath}/Figures/ACF_mean-over-runs_by-source_subplots.png")
+    fig_together.savefig(f"{savepath}/Figures/ACF_mean-over-runs_by-source.png")
 
     # FIGURA: Cumulatives---------------------------------------------------
     fig, ax = plt.subplots(num=37817817174681374681354132541354)

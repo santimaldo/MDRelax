@@ -47,12 +47,13 @@ plt.rcParams.update({'font.size': 12})
 
 
 # DME - No anion
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion_bigbox/"
 savepath = path_MDrelax
 cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
-runs_inds = np.delete(np.arange(3.5,10.1,0.5), [1,3])
+# runs_inds = np.delete(np.arange(3.5,10.1,0.5), [1,3])
+runs_inds = [5]
 mdp_file = "HQ"
 runs = [f"{t*1000:.0f}_ps" for t in runs_inds]
 # Number of Li ions in a run 
@@ -61,6 +62,7 @@ Ncations = 1
 
 # Number of time steps
 Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")
+Ntimes = 1000
 # Number of runs
 Nruns = len(runs)
 
@@ -102,8 +104,8 @@ for run in runs:
             # this EFG_nn is (3,3,Ntimes) shaped
             # nn is the cation index
             EFG_nn = np.array([[Vxx, Vxy, Vxz],
-                                   [Vxy, Vyy, Vyz],
-                                   [Vxz, Vyz, Vzz]])                                
+                               [Vxy, Vyy, Vyz],
+                               [Vxz, Vyz, Vzz]])                                
             # EFG_{source} shape: (3,3, Ntimes, Nruns, Ncations)
             if cation in efg_source:            
                 EFG_cation[:,:,:, run_ind, nn] = EFG_nn            
