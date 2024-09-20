@@ -32,38 +32,43 @@ def ExpDecN(x, *params):
 names=[]
 paths=[]
 # ACF 0
-names.append("DME-LiTFSI")
-paths.append("/home/santi/MD/MDRelax_results/DME_LiTFSI/")
+# names.append("DME-LiTFSI")
+# paths.append("/home/santi/MD/MDRelax_results/DME_LiTFSI/")
 
 # ACF 1
-names.append(r"DME-$Li_2S_6$")
-paths.append("/home/santi/MD/MDRelax_results/DME_PS/")
+# names.append(r"DME-$Li_2S_6$")
+# paths.append("/home/santi/MD/MDRelax_results/DME_PS/")
 
 # ACF 2
-names.append(r"DME-$Li^+$")
-paths.append("/home/santi/MD/MDRelax_results/DME_no-anion/")
+# names.append(r"DME-$Li^+$")
+# paths.append("/home/santi/MD/MDRelax_results/DME_no-anion/")
 
+names.append("DME-Li+: UHQ")
+paths.append("/home/santi/MD/MDRelax_results/DME_no-anion_bigbox_UHQ/upto5ps/")
 
 # numero de exponenciales
 # tau_guess = [0.03,0.05,5,20]
-tau_guess = [0.03,1,5,10]
-A_j_guess = [0.03,1,5,10]
-N = len(tau_guess)
+# tau_guess = [0.03,1,5,10]
+tau_guess = [0.05,5,50]
+A_j_guess = [0.3,0.3,0.3]
+
 
 # processing parameters:
 # from cut-off time, the acf is forced to zero
-cutoff_time = 50 # ps
+cutoff_time = 80 # ps
 
 
 colors_data = ['cornflowerblue', 'lightcoral', 'lightgreen']
 colors_fit = ['midnightblue', 'firebrick', 'forestgreen']
 efg_variances = []
 correlation_times = []
+N = len(tau_guess)
 # fig, ax= plt.subplots(nrows=1, ncols=1,figsize=(10, 6))
 fig, (ax, ax_resid) = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), gridspec_kw={'height_ratios': [3, 1]})
 for idx, (path, name) in enumerate(zip(paths, names)):
 
-    tau, acf = np.loadtxt(f"{path}ACF_mean-over-runs.dat").T
+    data = np.loadtxt(f"{path}ACF_mean-over-runs.dat")
+    tau, acf = data[:,0], data[:,1]
 
     acf_full = acf
     tau_full = tau
@@ -136,10 +141,10 @@ ax.legend(title=legend_title, fontsize=14)
 
 
 ### tmp settings
-ax.set_xlim([1e-2,100])
-ax.set_ylim([1e-4,3e-2])
-ax.set_xscale('log')
-ax.set_yscale('log')
+ax.set_xlim([-0.1, 1])
+# ax.set_ylim([1e-4,3e-2])
+# ax.set_xscale('log')
+# ax.set_yscale('log')
 
 # Formatting residuals plot
 ax_resid.axhline(0, color='k', ls='--')
@@ -172,4 +177,9 @@ for idx in range(len(correlation_times)):
     R1 = CQ * (1+gamma)**2 * efg_variance * tau_c
     T1 = 1/R1
     
-    print(f"{names[idx]}:\t T1 = {T1:.3f} s")
+    print(f"{names[idx]}:")    
+    print(f"\t <V^2> = {efg_variances[idx]:.3e} e^2 A^-6 (4pi epsilon0)^-2")
+    print(f"\t tau_c = {tau_c*1e12:.1f} ps")
+    print(f"\t T1 = {T1:.3f} s")
+
+# %%

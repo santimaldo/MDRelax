@@ -124,7 +124,7 @@ def get_Charges(species_list, path):
 
 #=========================================================
 #=========================================================
-def get_dt(mdp_file):
+def get_dt(mdp_file, trajectory_format):
     """    
     get time-step between frames from the .mdp file
     Parameters
@@ -135,7 +135,11 @@ def get_dt(mdp_file):
     -------
     dt : float   -  dt in ps = 1e-12 s
     """            
-    with open(mdp_file, "r") as f:        
+    if "trr" in trajectory_format:
+        keyword = "nstxout"
+    elif "xtc" in trajectory_format:
+        keyword = "nstxout-compressed"
+    with open(mdp_file, "r") as f:
         parameters_obtained=0
         for ii in range(1000):
             line = f.readline()        
@@ -147,7 +151,7 @@ def get_dt(mdp_file):
                 except:
                     msg = f"Could not get dt from 'dt' in {mdp_file}"
                     raise Warnint(msg)                
-            if "nstxout" in line:
+            if line.startswith(keyword):
                 try:
                     # intervalo de guardado:
                     dS = float(line.split()[2])
@@ -161,6 +165,7 @@ def get_dt(mdp_file):
             msg = f"Is this even a .mdp file? : {mdp_file}"
             raise Warning(msg)
     dt = dS*dt_MD
+    print(f"MD sampling frequency: {dt} ps")
     return dt
 #=========================================================
 #=========================================================

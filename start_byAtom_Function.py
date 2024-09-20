@@ -37,7 +37,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
     runs_gro = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix_gro]    
     #---------------------------------------------------
     # get_dt() takes the .mdp file
-    dt = get_dt(f"{path_Gromacs}{runs_prefix}.mdp")
+    dt = get_dt(f"{path_Gromacs}{runs_prefix}.mdp", trajectory_format)
     Charges = get_Charges([cation_itp, anion_itp, solvent_itp], path_Gromacs)
 
     # loop over different runs
