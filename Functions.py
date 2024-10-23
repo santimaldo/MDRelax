@@ -75,7 +75,7 @@ def calculate_EFG(q, r, x, y, z):
 
 #=========================================================
 #=========================================================
-def get_Charges(species_list, path):
+def get_Charges(species_list, path, forcefield="park.ff"):
     """    
     get charges of the species
     Parameters
@@ -91,10 +91,13 @@ def get_Charges(species_list, path):
     """    
 
     charges_df = pd.DataFrame(columns=["residue", "AtomType", "Charge"])#, "atom", "residue"])
+
+    if not(type(species_list) is list):
+        species_list = [species_list]        
     for species in species_list:
         # si no hay anion, salteo ese tipo de atomo
         if "none" in species.lower(): continue
-        with open(f"{path}park.ff/{species}.itp", "r") as f:    
+        with open(f"{path}{forcefield}/{species}.itp", "r") as f:    
             with open(f"{path}/{species}.charges", "w") as wf:
                 for ii in range(1000):        
                     condition_i = "[ atoms ]" in f.readline()

@@ -20,11 +20,14 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                  species = ["cation", "anion", "solvent"],
                  species_itp = ["Li","none", "DME_7CB8A2"],
                  Ncations = 1,
+                 mdp_prefix =None,
                  runs_prefix = "HQ",
                  runs_suffix = None,
                  runs_suffix_gro = None,
                  trajectory_format = ".trr",
-                 topology_format = ".gro"):
+                 topology_format = ".gro",
+                 forcefield="park.ff"
+                 ):
     """
     Function for reading GROMACS data and calculating the EFG
     at the cations' positions from different EFG-sources (other charges)
@@ -32,13 +35,14 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
     # Unpacking variables:
     cation, anion, solvent = species # names
     cation_itp, anion_itp, solvent_itp = species_itp # as in .itp files
-        
+    if mdp_prefix is None:
+        mdp_prefix = runs_prefix 
     runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]    
     runs_gro = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix_gro]    
     #---------------------------------------------------
     # get_dt() takes the .mdp file
-    dt = get_dt(f"{path_Gromacs}{runs_prefix}.mdp", trajectory_format)
-    Charges = get_Charges([cation_itp, anion_itp, solvent_itp], path_Gromacs)
+    dt = get_dt(f"{path_Gromacs}{mdp_prefix}.mdp", trajectory_format)
+    Charges = get_Charges([cation_itp, anion_itp, solvent_itp], path_Gromacs, forcefield=forcefield)
 
     # loop over different runs
     for idx in range(len(runs)):    
@@ -77,6 +81,9 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                 for residue, AtomType in zip(Charges['residue'],
                                             Charges['AtomType']):
                     q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
+
+                    if q<1e-5: # si una especie no tiene carga, no calculo nada
+                        continue
                     
                     group = u.select_atoms(f"name {AtomType}")                               
                     if group.n_atoms==0: continue
