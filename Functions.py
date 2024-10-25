@@ -3,12 +3,44 @@ import numpy as np
 # import MDAnalysis as mda
 import pandas as pd
 from scipy.integrate import cumulative_trapezoid, simpson
+from scipy.signal import correlate 
 import time
 
 
+# #=========================================================
+# #=========================================================
+# def Autocorrelate(tau, EFG, method='scipy'):
+#     """
+#     parameters:
+#     tau :   1d-array    -  times in picoseconds
+#     EFG:    array       -  shape: (3,3, Ntimes, Nruns, Ncations)
+#     """
+#     dt = tau[1]-tau[0]
+#     _, _, Ntau, Nruns, Ncations = EFG.shape    
+#     # initialize
+#     acf = np.zeros([Ntau, Nruns, Ncations])
+#     efg_squared = np.zeros([Ntau, Nruns, Ncations])
+#     # loop over time:        
+#     for jj in range(Ntau):        
+#         if jj%1000==0:
+#             ttn = time.time()
+#             print(f"    tau: {tau[jj]} ps")            
+#         tau_jj = jj*dt          
+#         max_tau_index = tau.size-jj                        
+#         acf_jj = np.zeros([Nruns, Ncations]) 
+#         for ii in range(0,max_tau_index):                                 
+#             acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
+#                              axis=(0,1))                    
+#         acf[jj,:,:] = acf_jj/(max_tau_index+1)
+#         tt0 = time.time()
+#     return acf
+# #=========================================================
+# #=========================================================    
+
+
 #=========================================================
 #=========================================================
-def Autocorrelate(tau, EFG):
+def Autocorrelate(tau, EFG, method='scipy'):
     """
     parameters:
     tau :   1d-array    -  times in picoseconds
@@ -17,24 +49,50 @@ def Autocorrelate(tau, EFG):
     dt = tau[1]-tau[0]
     _, _, Ntau, Nruns, Ncations = EFG.shape    
     # initialize
-    acf = np.zeros([Ntau, Nruns, Ncations])
-    efg_squared = np.zeros([Ntau, Nruns, Ncations])
-    # loop over time:        
-    for jj in range(Ntau):        
-        if jj%1000==0:
-            ttn = time.time()
-            print(f"    tau: {tau[jj]} ps")            
-        tau_jj = jj*dt          
-        max_tau_index = tau.size-jj                        
-        acf_jj = np.zeros([Nruns, Ncations]) 
-        for ii in range(0,max_tau_index):                                 
-            acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
-                             axis=(0,1))                    
-        acf[jj,:,:] = acf_jj/(max_tau_index+1)
-        tt0 = time.time()
-    return acf
+    ACF = np.zeros([Ntau, Nruns, Ncations])
+    # efg_squared = np.zeros([Ntau, Nruns, Ncations])
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    # Metodo scipy.signal.correlate
+    if 'scipy' in method.lower():
+        print("ACF method: scipy")
+        # loop over EFG matrix elements:        
+        for kk in range(Nruns):
+            for ll in range(Ncations):  
+                acf = np.zeros(Ntau)                      
+                for ii in range(3):
+                    for jj in range(3):
+                        if ii<jj:
+                            factor=2
+                        elif ii==jj:
+                            factor=1
+                        elif jj<ii:
+                            continue                            
+                        V = EFG[ii,jj,:,kk,ll]
+                        corr = factor*correlate(V,V, mode='full')
+                        # take only positive time lags:
+                        acf += corr[corr.size//2:]
+    #### MAL!!!! ESTOY HACIENDO LA SUMA DE CORRELACIONES!!!
+    # TENGO QUE HACER LA CORRELACION DE LA SUMA!                        
+                ACF[:,kk,ll] = acf
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    # Metodo manual que yo implemente
+    else:
+        # loop over time:        
+        for jj in range(Ntau):        
+            if jj%1000==0:
+                ttn = time.time()
+                print(f"    tau: {tau[jj]} ps")                        
+            max_tau_index = tau.size-jj                        
+            acf_jj = np.zeros([Nruns, Ncations]) 
+            for ii in range(0,max_tau_index):                                 
+                acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
+                                axis=(0,1))                    
+            ACF[jj,:,:] = acf_jj/(max_tau_index+1)           
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =             
+    return ACF
 #=========================================================
-#=========================================================    
+#=========================================================   
+
 
 
 #=========================================================

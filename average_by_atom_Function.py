@@ -63,7 +63,8 @@ def calculate_ACF(path_MDrelax,
                   species = ["cation", "anion", "solvent"],                  
                   Ncations = 1,
                   runs_prefix = "HQ",
-                  runs_suffix = None,                                    
+                  runs_suffix = None,
+                  method='scipy'                                    
                   ):
     """
     Reads EFG files and calculate ACF functions, plot the results
@@ -141,12 +142,12 @@ def calculate_ACF(path_MDrelax,
     #-------------------------------------------
     # calculate total ACF:
     print(rf"ACF with EFG_total")        
-    acf_total = Autocorrelate(tau, EFG_total)
+    acf_total = Autocorrelate(tau, EFG_total, method=method)
     #-------------------------------------------
     # calculate only if a cation is a possible efg source
     print(rf"ACF with EFG-source: {cation}")
     if Ncations>1:     
-        acf_cation = Autocorrelate(tau, EFG_cation)
+        acf_cation = Autocorrelate(tau, EFG_cation, method=method)
     else:
         print(rf"There is only one {cation}. It can't be an EFG source")
     #-------------------------------------------
@@ -155,10 +156,10 @@ def calculate_ACF(path_MDrelax,
     if "none" in anion.lower():
         print("since no anion is present, this step is skipped")
     else:    
-        acf_anion = Autocorrelate(tau, EFG_anion)
+        acf_anion = Autocorrelate(tau, EFG_anion, method=method)
     #-------------------------------------------
     print(rf"ACF with EFG-source: {solvent}")
-    acf_solvent = Autocorrelate(tau, EFG_solvent)
+    acf_solvent = Autocorrelate(tau, EFG_solvent, method=method)
     tn = time.time()
     print(f"tiempo=   {tn-t0} s") 
     #===================================================================    
@@ -325,6 +326,7 @@ def plot_ACF(path_MDrelax,
     acf_anion_mean = np.mean(acf_anion, axis=2)
     acf_solvent_mean = np.mean(acf_solvent, axis=2)
     acf_cross_mean = np.mean(acf_cross, axis=2)
+
 
 
     #=======================================================
