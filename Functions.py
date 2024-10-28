@@ -350,7 +350,7 @@ def Autocorrelate(tau, EFG, method='scipy'):
     # efg_squared = np.zeros([Ntau, Nruns, Ncations])
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # for taking into account the symmety of EFG tensor:
-    prefactor = np.array([1,1,1,2,2,2])  
+    prefactor = np.array([1,1,1,2,2,2])
     # Nomralized by number of average points
     normalization = Ntau - np.arange(Ntau)
     # Metodo scipy.signal.correlate
@@ -542,9 +542,11 @@ def calculate_ACF(path_MDrelax,
         run_ind += 1  
         # 2)-----------------------------------------------
         # guardo varianzas promedio    
-        data = efg_variance[run_ind,:]
         header = f"EFG variance for each {Ncations} {cation} cations.\t"\
-                "Units: e^2*A^-6*(4pi*epsilon0)^-2"
+                "\t1st row units: e^2*A^-6*(4pi*epsilon0)^-2"+"\n"\
+                "\t2nd row units: a.u (atomic units)"
+        # a0 is for converting to atomic units:
+        data = [efg_variance[run_ind,:], (a0/1e-10)**6*efg_variance[run_ind,:]]                
         np.savetxt(f"{savepath}/EFG_variance_{run}.dat", data, header=header)
         # 3)-----------------------------------------------
         # guardo autocorrelaciones promedio
