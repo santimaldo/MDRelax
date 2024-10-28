@@ -636,10 +636,10 @@ def plot_ACF(path_MDrelax,
         # guardo autocorrelaciones promedio        
         # np.loadtxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
         # 4)-----------------------------------------------
-        acf_total[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-total_{run}_all-cation.dat")[:,1:]
-        acf_cation[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{cation}_{run}_all-cation.dat")[:,1:]
-        acf_anion[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{anion}_{run}_all-cation.dat")[:,1:]
-        acf_solvent[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{solvent}_{run}_all-cation.dat")[:,1:]  
+        acf_total[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-total_{run}_all-cation.dat")[:Ntimes,1:]
+        acf_cation[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{cation}_{run}_all-cation.dat")[:Ntimes,1:]
+        acf_anion[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{anion}_{run}_all-cation.dat")[:Ntimes,1:]
+        acf_solvent[:,run_ind, :] = np.loadtxt(f"{path_MDrelax}/ACF_efgsource-{solvent}_{run}_all-cation.dat")[:Ntimes,1:]  
 
     #------------------------------------------------------
     #------------------------------------------------------
