@@ -9,8 +9,8 @@ read MD data and calculate ACF functions
 """
 
 import numpy as np
-from start_byAtom_Function import get_EFG_data
-from average_by_atom_Function import calculate_ACF, plot_ACF
+from old.start_byAtom_Function import get_EFG_data
+from old.average_by_atom_Function import calculate_ACF, plot_ACF
 import time
 
 # # DME - NoAnion

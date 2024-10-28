@@ -11,24 +11,27 @@ read MD data and calculate ACF functions
 
 
 import numpy as np
-from start_byAtom_Function import get_EFG_data
-from average_by_atom_Function import calculate_ACF, plot_ACF
+from Functions import get_EFG_data, calculate_ACF, plot_ACF
 import time
 
-###### DME - no anion
-# path_Gromacs = "/home/santi/mendieta/DME_no-anion_bigbox/"
-# # path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion_bigbox_UHQ/"
+forcefield = "park.ff"
+
+##### DME - no anion
+path_Gromacs = "/home/santi/mendieta/DME_no-anion_bigbox/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/tmp/"
 # path_MDrelax = "/home/santi/MD/MDRelax_results/DME_no-anion_bigbox_UHQ/upto5ps/"
-# cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
-# cation, anion, solvent = ["Li","none", "DME"] # names
-# salt = r"Li$^+$"
-# Ncations = 20 # numero de Li+
-# runs_inds = range(3,10)
-# runs_prefix = "UHQ"
-# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.upto5ps" for t in runs_inds]
-# trajectory_format = ".xtc" # ".trr" or ".xtc"
-# topology_format = ".tpr" # ".tpr" or ".gro"
+cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","none", "DME"] # names
+salt = r"Li$^+$"
+Ncations = 20 # numero de Li+
+runs_inds = range(5,6)
+mdp_prefix = "HQ"
+runs_prefix = "HQ"
+runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}.upto1ps" for t in runs_inds]
+trajectory_format = ".trr" # ".trr" or ".xtc"
+topology_format = ".tpr" # ".tpr" or ".gro"
+
 
 
 ######  DME-PS / TEGDME-PS
@@ -104,22 +107,22 @@ import time
 
 
 
-#######  SMALL BOX TMP
-path_Gromacs = "/home/santi/mendieta/DME_small-boxes/DME_no-anion/"
-path_MDrelax = "/home/santi/MD/MDRelax_results/tmp/ACF-scipy-LiWater-long/"
-cation_itp, anion_itp, solvent_itp = ["Li","none", "SOL"] # as in .itp files
-cation, anion, solvent = ["Li","none", "SOL"] # names
-salt = r"Li$^+$"
-Ncations = 1 # numero de Li+
-runs_inds = range(6,7)
-runs_prefix = "HQ"
-mdp_prefix = "HQ"
-runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
-runs_suffix_gro = [f".{t:.0f}.long" for t in runs_inds]
+# #######  SMALL BOX TMP
+# path_Gromacs = "/home/santi/mendieta/DME_small-boxes/DME_no-anion/"
+# path_MDrelax = "/home/santi/MD/MDRelax_results/tmp/ACF-scipy-LiWater-long/"
+# cation_itp, anion_itp, solvent_itp = ["Li","none", "SOL"] # as in .itp files
+# cation, anion, solvent = ["Li","none", "SOL"] # names
+# salt = r"Li$^+$"
+# Ncations = 1 # numero de Li+
+# runs_inds = range(6,7)
+# runs_prefix = "HQ"
+# mdp_prefix = "HQ"
+# runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
+# runs_suffix_gro = [f".{t:.0f}.long" for t in runs_inds]
 
-trajectory_format = ".trr" # ".trr" or ".xtc"
-topology_format = ".gro" # ".tpr" or ".gro"
-forcefield = "park.ff"
+# trajectory_format = ".trr" # ".trr" or ".xtc"
+# topology_format = ".gro" # ".tpr" or ".gro"
+# forcefield = "park.ff"
 
 
 # t0 = time.time()
