@@ -378,10 +378,12 @@ def Autocorrelate(tau, EFG, method='scipy'):
             max_tau_index = tau.size-jj                        
             EFG_wheigted = EFG*prefactor[None, None, None, :]
             EFG_shifted = np.roll(EFG_wheigted, jj, axis=0)
-            VabVab = EFG_wheigted[jj:,:,:,:]*EFG_shifted[jj:,:,:,:]
+            VabVab = (EFG_wheigted*EFG_shifted)[jj:,:,:,:]
             sum_VabVab = np.sum(VabVab, axis=3)
-            integrate = simpson(sum_VabVab, x=tau[jj:])
-                        
+            print(sum_VabVab.shape, tau[jj:].shape, "AAAAAAAAAAAAAAAAAAAAAA")  
+            integrate = simpson(sum_VabVab, x=tau[jj:], axis=0)
+            print(integrate.shape, "AAAAAAAAAAAAAAAAAAAAAA")       
+            # NO FUNCIONAAAAAAAAAAAAAAAAAAAAAAAAAAA     
             ACF[jj,:,:] = integrate/normalization
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =             
     return ACF
