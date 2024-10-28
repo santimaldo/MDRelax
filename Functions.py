@@ -4,6 +4,7 @@ import MDAnalysis as mda
 import pandas as pd
 from scipy.integrate import cumulative_trapezoid, simpson
 from scipy.signal import correlate 
+from scipy import constants
 from pathlib import Path
 import time
 
@@ -227,10 +228,10 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         # tiempo en ps    
         t = np.arange(len(u.trajectory))*dt
         # Arreglo EFG:
-        # EFG.shape --> (NtimeSteps, Ncations, 3, 3)        
-        EFG_anion = np.zeros([len(u.trajectory), Ncations, 3, 3])    
-        EFG_cation = np.zeros([len(u.trajectory), Ncations, 3, 3])    
-        EFG_solvent = np.zeros([len(u.trajectory), Ncations, 3, 3])    
+        # EFG.shape --> (NtimeSteps, Ncations, 6). The "6" is for the non-equiv. EFG matrix elements
+        EFG_anion = np.zeros([len(u.trajectory), Ncations, 6])    
+        EFG_cation = np.zeros([len(u.trajectory), Ncations, 6])
+        EFG_solvent = np.zeros([len(u.trajectory), Ncations, 6])    
         t_ind = -1
         for timestep in u.trajectory:
             t_ind+=1         
@@ -299,17 +300,21 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                         EFG_t_nthcation_cation += EFG_t_AtomType
                     else:
                         EFG_t_nthcation_solvent += EFG_t_AtomType                    
-                EFG_anion[t_ind, cation_index, :, :] = EFG_t_nthcation_anion
-                EFG_cation[t_ind, cation_index, :, :] = EFG_t_nthcation_cation
-                EFG_solvent[t_ind, cation_index, :, :] = EFG_t_nthcation_solvent
+                EFG_anion[t_ind, cation_index, :] = EFG_t_nthcation_anion
+                EFG_cation[t_ind, cation_index, :] = EFG_t_nthcation_cation
+                EFG_solvent[t_ind, cation_index, :] = EFG_t_nthcation_solvent
         #---------------------------------------------------------
         ### EXPORT DATA        
         EFG_total = EFG_cation + EFG_anion + EFG_solvent
         EFGs = [EFG_cation, EFG_anion, EFG_solvent, EFG_total]
         efg_sources = [cation, anion, solvent, "total"]
         for EFG, efg_source in zip(EFGs, efg_sources):
-            Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
-            Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
+            # This was HIGHLY memory consuming.
+            # Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
+            # Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
+            # replaced by:
+            Vxx, Vyy, Vzz = EFG[:,:,0], EFG[:,:,1], EFG[:,:,2]
+            Vxy, Vyz, Vxz = EFG[:,:,3], EFG[:,:,4], EFG[:,:,5]
             
             data = [t]
             for nn in range(cations_group.n_atoms):    
@@ -413,16 +418,16 @@ def calculate_ACF(path_MDrelax,
     
     
     t0 = time.time()
-    efg_sources = [cation, anion, solvent, "total"]
-    EFG_cation = np.zeros([3,3, Ntimes, Nruns, Ncations])
-    EFG_anion = np.zeros([3,3, Ntimes, Nruns, Ncations])
-    EFG_solvent = np.zeros([3,3, Ntimes, Nruns, Ncations])
-    EFG_total = np.zeros([3,3, Ntimes, Nruns, Ncations])
-    acf_cation = np.zeros([Ntimes, Nruns, Ncations])
-    acf_anion = np.zeros([Ntimes, Nruns, Ncations])
-    acf_solvent = np.zeros([Ntimes, Nruns, Ncations])
-    acf_total = np.zeros([Ntimes, Nruns, Ncations])
-    efg_variance = np.zeros([Nruns, Ncations])
+    efg_sources     = [cation, anion, solvent, "total"]
+    EFG_cation      = np.zeros([Ntimes, Nruns, Ncations, 6])
+    EFG_anion       = np.zeros([Ntimes, Nruns, Ncations, 6])
+    EFG_solvent     = np.zeros([Ntimes, Nruns, Ncations, 6])
+    EFG_total       = np.zeros([Ntimes, Nruns, Ncations, 6])
+    acf_cation      = np.zeros([Ntimes, Nruns, Ncations])
+    acf_anion       = np.zeros([Ntimes, Nruns, Ncations])
+    acf_solvent     = np.zeros([Ntimes, Nruns, Ncations])
+    acf_total       = np.zeros([Ntimes, Nruns, Ncations])
+    efg_variance    = np.zeros([Nruns, Ncations])
     acf_total_mean = np.zeros([Ntimes, Nruns])
     run_ind = -1
     print("Reading files...")
@@ -444,24 +449,20 @@ def calculate_ACF(path_MDrelax,
             # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
             # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
             t0 = time.time()
-            for nn in range(Ncations): #uno para cada litio
-                # plt.plot(data[:,0], data[:,nn+1])            
-                Vxx, Vyy, Vzz = data[:,1+nn*6], data[:,2+nn*6], data[:,3+nn*6]
-                Vxy, Vyz, Vxz = data[:,4+nn*6], data[:,5+nn*6], data[:,6+nn*6]                                            
-                # this EFG_nn is (3,3,Ntimes) shaped
+            for nn in range(Ncations): #uno para cada litio                
+                # this EFG_nn is (Ntimes, 6) shaped: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz
                 # nn is the cation index
-                EFG_nn = np.array([[Vxx, Vxy, Vxz],
-                                    [Vxy, Vyy, Vyz],
-                                    [Vxz, Vyz, Vzz]])                                
+                EFG_nn = data[:, 1+nn*6:7+nn*6]
                 # EFG_{source} shape: (3,3, Ntimes, Nruns, Ncations)
+                # EFG_{source} shape: (Ntimes, Nruns, Ncations, 6)
                 if cation in efg_source:            
-                    EFG_cation[:,:,:, run_ind, nn] = EFG_nn            
+                    EFG_cation[:, run_ind, nn, :] = EFG_nn            
                 elif anion in efg_source:            
-                    EFG_anion[:,:,:, run_ind, nn] = EFG_nn            
+                    EFG_anion[:, run_ind, nn, :] = EFG_nn            
                 elif solvent in efg_source:
-                    EFG_solvent[:,:,:, run_ind, nn] = EFG_nn
+                    EFG_solvent[:, run_ind, nn, :] = EFG_nn
                 elif "total" in efg_source:
-                    EFG_total[:,:,:, run_ind, nn] = EFG_nn 
+                    EFG_total[:, run_ind, nn, :] = EFG_nn 
 
     #Calculo ACF========================================================
     print("Calculating ACF...")        
@@ -516,9 +517,13 @@ def calculate_ACF(path_MDrelax,
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
     efg_variance_mean_over_runs = np.mean(efg_variance, axis=(0,1))
-    header = f"EFG variance: mean over runs.\t"\
-              "Units: e^2*A^-6*(4pi*epsilon0)^-2"    
-    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", [efg_variance_mean_over_runs], header=header)    
+    header = f"EFG variance: mean over runs."+"\n"\
+              "\t1st column units: e^2*A^-6*(4pi*epsilon0)^-2"+"\n"\
+              "\t2nd column units: a.u (atomic units)"
+    # a0 is for converting to atomic units:
+    a0 = constants.value("Bohr radius")
+    data = [efg_variance_mean_over_runs, (a0/1e-10)^6*efg_variance_mean_over_runs]
+    np.savetxt(f"{savepath}/EFG_variance_mean-over-runs.dat", data, header=header)    
     # 1)-------------------------------------------------
     ## save acf_mean_over_runs data
     data = np.array([tau, 
