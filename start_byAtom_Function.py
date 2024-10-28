@@ -7,6 +7,8 @@ Created on Thu Nov  2 16:33:25 2023
 
 First script to test the EFG summation
 
+aca tengo guardada la funcion que calculaba EFG. Ahora la puse en Functions.py
+
 """
 import numpy as np
 import matplotlib.pyplot as plt

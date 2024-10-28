@@ -6,6 +6,9 @@ Created on Tue Dec  5 12:00:58 2023
 @author: santi
 
 read ACF functions and average
+
+
+aca tengo guardada la funcion que calculaba la ACF. Ahora la puse en Functions.py
 """
 
 import matplotlib.pyplot as plt
@@ -136,7 +139,7 @@ def calculate_ACF(path_MDrelax,
                     EFG_solvent[:,:,:, run_ind, nn] = EFG_nn
                 elif "total" in efg_source:
                     EFG_total[:,:,:, run_ind, nn] = EFG_nn 
-                
+
     #Calculo ACF========================================================
     print("Calculating ACF...")        
     #-------------------------------------------
