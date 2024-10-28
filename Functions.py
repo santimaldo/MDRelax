@@ -224,21 +224,23 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         print(u)                         
         box=u.dimensions
         center = box[0:3]/2
-                
+
+        Nsteps = len(u.trajectory)                
         # tiempo en ps    
-        t = np.arange(len(u.trajectory))*dt
+        t = np.arange(Nsteps)*dt
         # Arreglo EFG:
         # EFG.shape --> (NtimeSteps, Ncations, 6). The "6" is for the non-equiv. EFG matrix elements
-        EFG_anion = np.zeros([len(u.trajectory), Ncations, 6])    
-        EFG_cation = np.zeros([len(u.trajectory), Ncations, 6])
-        EFG_solvent = np.zeros([len(u.trajectory), Ncations, 6])    
+        EFG_anion = np.zeros([Nsteps, Ncations, 6])    
+        EFG_cation = np.zeros([Nsteps, Ncations, 6])
+        EFG_solvent = np.zeros([Nsteps, Ncations, 6])    
         t_ind = -1
         for timestep in u.trajectory:
             t_ind+=1         
             n_frame = u.trajectory.frame
-            if t_ind%100==0:                
+            t_print=(Nsteps//20)
+            if t_ind%t_print==0:                
                 print("++++++++++++++++++++++++++++++++++++++++++")
-                print(f"dataset {idx+1}/{len(runs)}, frame={n_frame}, time = {t[t_ind]:.2f} ps\n\n")                
+                print(f"dataset {idx+1}/{len(runs)}, frame={n_frame}, time = {t[t_ind]:.2f} ps ({t_ind/Nsteps*100:.1f} %)\n\n")                
 
             cations_group = u.select_atoms(f"name {cation}*")
             
@@ -349,6 +351,7 @@ def Autocorrelate(tau, EFG, method='scipy'):
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # for taking into account the symmety of EFG tensor:
     prefactor = np.array([1,1,1,2,2,2])  
+    normalization = Ntau - np.arange(Ntau)
     # Metodo scipy.signal.correlate
     if 'scipy' in method.lower():
         print("ACF method: scipy")
@@ -357,12 +360,13 @@ def Autocorrelate(tau, EFG, method='scipy'):
             for ll in range(Ncations):  
                 acf = np.zeros(Ntau)                      
                 for ab in range(6): #ab: xx,yy,zz,xy,xz,yz               
-                    V = EFG[:,kk,ll,ab]
+                    V = EFG[:,kk,ll,ab]                    
                     corr = prefactor[ab]*correlate(V,V, mode='full')
                     # take only positive time lags:
                     acf += corr[corr.size//2:]
-                # acf es la suma de las correlaciones en cada ab
-                ACF[:,kk,ll] = acf
+                # acf es la suma de las correlaciones en cada ab                
+                ACF[:,kk,ll] = acf/normalization
+                print("NORMALIZED!!")
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # Metodo manual que yo implemente
     else: ############################## NO FUNCIONA!!!
