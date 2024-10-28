@@ -351,6 +351,7 @@ def Autocorrelate(tau, EFG, method='scipy'):
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # for taking into account the symmety of EFG tensor:
     prefactor = np.array([1,1,1,2,2,2])  
+    # Nomralized by number of average points
     normalization = Ntau - np.arange(Ntau)
     # Metodo scipy.signal.correlate
     if 'scipy' in method.lower():
@@ -365,8 +366,7 @@ def Autocorrelate(tau, EFG, method='scipy'):
                     # take only positive time lags:
                     acf += corr[corr.size//2:]
                 # acf es la suma de las correlaciones en cada ab                
-                ACF[:,kk,ll] = acf/normalization
-                print("NORMALIZED!!")
+                ACF[:,kk,ll] = acf/normalization                
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # Metodo manual que yo implemente
     else: ############################## NO FUNCIONA!!!
@@ -580,7 +580,8 @@ def plot_ACF(path_MDrelax,
             Ncations = 1,
             runs_prefix = "HQ",
             runs_suffix = None,                                                     
-            salt = r"Li$_2$S$_6$"):
+            salt = r"Li$_2$S$_6$",
+            max_tau=None):
     """
     Read acf data and plot 
     """    
@@ -592,7 +593,7 @@ def plot_ACF(path_MDrelax,
     # define savepath
     if savepath is None:
         savepath = path_MDrelax 
-    runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]
+    runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]    
     # Number of time steps
     Ntimes = get_Ntimes(f"{path_MDrelax}EFG_{cation}_{runs[0]}.dat")    
     # Number of runs
@@ -607,9 +608,17 @@ def plot_ACF(path_MDrelax,
     
     # 1)-------------------------------------------------
     ## read acf_mean_over_runs data    
-    data = np.loadtxt(f"{path_MDrelax}/ACF_mean-over-runs.dat")
+    data = np.loadtxt(f"{path_MDrelax}/ACF_mean-over-runs.dat")    
     tau = data[:,0]
     acf_mean = data[:,1:]
+
+    if max_tau is not None:
+        condicion = tau<=max_tau
+        tau = tau[condicion]
+        acf_mean = acf_mean[condicion]
+        # overwrite Ntimes:
+        Ntimes = tau.size
+
     
     acf_cation = np.zeros([Ntimes, Nruns, Ncations])
     acf_anion = np.zeros([Ntimes, Nruns, Ncations])

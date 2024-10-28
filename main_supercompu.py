@@ -71,6 +71,7 @@ plot_ACF(path_MDrelax,
               salt = salt,
               Ncations = Ncations,
               runs_prefix = runs_prefix,
-              runs_suffix = runs_suffix)             
+              runs_suffix = runs_suffix,
+              max_tau = 10)             
 print(f"plots time: {time.time()-t0:.0f} s")
 # %%
