@@ -337,7 +337,9 @@ def Autocorrelate(tau, EFG, method='scipy'):
     """
     parameters:
     tau :   1d-array    -  times in picoseconds
-    EFG:    array       -  shape: (3,3, Ntimes, Nruns, Ncations)
+    EFG:    array       -  shape: (Ntimes, Nruns, Ncations, 6)
+                           The "6" accounts for:
+                           Vxx, Vyy, Vzz, Vxy, Vxz, Vyz 
     """
     dt = tau[1]-tau[0]
     _, _, Ntau, Nruns, Ncations = EFG.shape    
@@ -345,6 +347,8 @@ def Autocorrelate(tau, EFG, method='scipy'):
     ACF = np.zeros([Ntau, Nruns, Ncations])
     # efg_squared = np.zeros([Ntau, Nruns, Ncations])
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    # for taking into account the symmety of EFG tensor:
+    prefactor = np.array([1,1,1,2,2,2])  
     # Metodo scipy.signal.correlate
     if 'scipy' in method.lower():
         print("ACF method: scipy")
@@ -352,24 +356,16 @@ def Autocorrelate(tau, EFG, method='scipy'):
         for kk in range(Nruns):
             for ll in range(Ncations):  
                 acf = np.zeros(Ntau)                      
-                for ii in range(3):
-                    for jj in range(3):
-                        if ii<jj:
-                            factor=2
-                        elif ii==jj:
-                            factor=1
-                        elif jj<ii:
-                            continue                            
-                        V = EFG[ii,jj,:,kk,ll]
-                        corr = factor*correlate(V,V, mode='full')
-                        # take only positive time lags:
-                        acf += corr[corr.size//2:]
-    #### MAL!!!! ESTOY HACIENDO LA SUMA DE CORRELACIONES!!!
-    # TENGO QUE HACER LA CORRELACION DE LA SUMA!                        
+                for ab in range(6): #ab: xx,yy,zz,xy,xz,yz               
+                    V = EFG[:,kk,ll,ab]
+                    corr = prefactor[ab]*correlate(V,V, mode='full')
+                    # take only positive time lags:
+                    acf += corr[corr.size//2:]
+                # acf es la suma de las correlaciones en cada ab
                 ACF[:,kk,ll] = acf
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # Metodo manual que yo implemente
-    else:
+    else: ############################## NO FUNCIONA!!!
         # loop over time:        
         for jj in range(Ntau):        
             if jj%1000==0:
@@ -428,7 +424,7 @@ def calculate_ACF(path_MDrelax,
     acf_solvent     = np.zeros([Ntimes, Nruns, Ncations])
     acf_total       = np.zeros([Ntimes, Nruns, Ncations])
     efg_variance    = np.zeros([Nruns, Ncations])
-    acf_total_mean = np.zeros([Ntimes, Nruns])
+    acf_total_mean  = np.zeros([Ntimes, Nruns])
     run_ind = -1
     print("Reading files...")
     # Loop sobre runs para calcular ACF
@@ -513,7 +509,7 @@ def calculate_ACF(path_MDrelax,
     # 2) EFG variance:  mean over cations, one per run
     # 3) ACF:           mean over cations, one per run
     # 4) ACF:           one per run, all cations data
-
+    #
     # 0)-------------------------------------------------
     ## save efg_variance_mean_over_runs data
     efg_variance_mean_over_runs = np.mean(efg_variance, axis=(0,1))
