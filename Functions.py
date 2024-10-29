@@ -280,9 +280,6 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
 
                     if rcut: # this is skipped only if rcut is None
                         # paso rcut de nm a Ang                                                
-                        if t_ind==0:
-                            print(f"rcut: {rcut} Ang")
-
                         x_distances = x_distances[r_distances<rcut]
                         y_distances = y_distances[r_distances<rcut]
                         z_distances = z_distances[r_distances<rcut]
