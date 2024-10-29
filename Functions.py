@@ -228,7 +228,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         box=u.dimensions
         center = box[0:3]/2
 
-        Nsteps = len(u.trajectory)                
+        trajectory = u.trajectory[10000:]
+        Nsteps = len(trajectory)                
         # tiempo en ps    
         t = np.arange(Nsteps)*dt
         # Arreglo EFG:
@@ -303,8 +304,11 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                         msg = f"hay un {AtomType} a menos de 1 A del {cation}_{cation_index}"
                         raise Warning(msg)
                     # Calculate EFG
-                    EFG_t_AtomType = calculate_EFG(q, r_distances, x_distances,
-                                            y_distances, z_distances)
+                    EFG_t_AtomType = calculate_EFG(q,
+                                                   r_distances,
+                                                   x_distances,
+                                                   y_distances,
+                                                   z_distances)
                         
                     if anion in residue:
                         EFG_t_nthcation_anion += EFG_t_AtomType                    
@@ -320,21 +324,15 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         EFG_total = EFG_cation + EFG_anion + EFG_solvent
         EFGs = [EFG_cation, EFG_anion, EFG_solvent, EFG_total]
         efg_sources = [cation, anion, solvent, "total"]
-        for EFG, efg_source in zip(EFGs, efg_sources):
-            # This was HIGHLY memory consuming.
-            # Vxx, Vyy, Vzz = EFG[:,:,0,0], EFG[:,:,1,1], EFG[:,:,2,2]
-            # Vxy, Vyz, Vxz = EFG[:,:,0,1], EFG[:,:,1,2], EFG[:,:,0,2]
-            # replaced by:
-            Vxx, Vyy, Vzz = EFG[:,:,0], EFG[:,:,1], EFG[:,:,2]
-            Vxy, Vyz, Vxz = EFG[:,:,3], EFG[:,:,4], EFG[:,:,5]
-            
+        for EFG, efg_source in zip(EFGs, efg_sources):            
+            Vxx, Vyy, Vzz, Vxy, Vxz, Vyz = [EFG[:, :, i] for i in range(6)]
             data = [t]
             for nn in range(cations_group.n_atoms):    
-                data += [Vxx[:,nn], Vyy[:,nn], Vzz[:,nn], Vxy[:,nn], Vyz[:,nn], Vxz[:,nn]]
+                data += [Vxx[:,nn], Vyy[:,nn], Vzz[:,nn], Vxy[:,nn], Vxz[:,nn], Vyz[:,nn]]
             
             data = np.array(data).T    
-            header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t"\
-                    r"Li2:  Vxx, Vyy, Vzz, Vxy, Vyz, Vxz \t and so on..."            
+            header =  r"# t [fs]\t Li1: Vxx, Vyy, Vzz, Vxy, Vxz, Vyz \t"\
+                    r"Li2:  Vxx, Vyy, Vzz, Vxy, Vxz, Vyz \t and so on..."            
             filename = f"{path_MDrelax}/EFG_{efg_source}_{run}.dat"
             np.savetxt(filename, data, header=header)
         del EFG_anion, EFG_solvent
@@ -460,11 +458,11 @@ def calculate_ACF(path_MDrelax,
                 # tau and t are the same
                 tau = data[:,0]            
             # data columns order:    
-            # t; Li1: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz..
+            # t; Li1: Vxx, Vyy, Vzz, Vxy, Vxz, Vxz; Li2: Vxx, Vyy, Vzz, Vxy, Vxz, Vxz..
             # 0; Li1:   1,   2,   3,   4,   5,   6; Li2:   7,   8,   9,  10,  11,  12..        
             t0 = time.time()
             for nn in range(Ncations): #uno para cada litio                
-                # this EFG_nn is (Ntimes, 6) shaped: Vxx, Vyy, Vzz, Vxy, Vyz, Vxz
+                # this EFG_nn is (Ntimes, 6) shaped: Vxx, Vyy, Vzz, Vxy, Vxz, Vxz
                 # nn is the cation index
                 EFG_nn = data[:, 1+nn*6:7+nn*6]                
                 # EFG_{source} shape: (Ntimes, Nruns, Ncations, 6)
