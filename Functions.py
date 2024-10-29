@@ -619,7 +619,8 @@ def plot_ACF(path_MDrelax,
     #=======================================================
     # 0)-------------------------------------------------
     ## READ efg_variance_mean_over_runs data    
-    efg_variance_mean_over_runs = np.loadtxt(f"{path_MDrelax}/EFG_variance_mean-over-runs.dat")
+    ### read the 0 element, which has the correct units (NOT ATOMIC UNITS)
+    efg_variance_mean_over_runs = np.loadtxt(f"{path_MDrelax}/EFG_variance_mean-over-runs.dat")[0]
     
     # 1)-------------------------------------------------
     ## read acf_mean_over_runs data    
@@ -646,7 +647,7 @@ def plot_ACF(path_MDrelax,
         run_ind += 1          
         # 2)-----------------------------------------------
         # guardo varianzas promedio            
-        efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")
+        efg_variance[run_ind, :] = np.loadtxt(f"{path_MDrelax}/EFG_variance_{run}.dat")[0]
         # 3)-----------------------------------------------
         # guardo autocorrelaciones promedio        
         # np.loadtxt(f"{path_MDrelax}/ACF_{run}.dat", data, header=header)
