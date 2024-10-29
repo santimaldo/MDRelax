@@ -229,7 +229,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         box=u.dimensions
         center = box[0:3]/2
 
-        Nsteps = len(u.trajectory)                
+        Nsteps = len(u.trajectory)
+        print("Number of steps: {Nsteps:.0f}")                        
         # tiempo en ps    
         t = np.arange(Nsteps)*dt
         # Arreglo EFG:
