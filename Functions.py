@@ -211,6 +211,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         mdp_prefix = runs_prefix 
     runs = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix]    
     runs_gro = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix_gro]    
+    if rcut: # this skipped only if rcut is None
+        rcut = 10*rcut
     #---------------------------------------------------
     # get_dt() takes the .mdp file
     dt = get_dt(f"{path_Gromacs}{mdp_prefix}.mdp", trajectory_format)
@@ -277,8 +279,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                     x_distances, y_distances, z_distances = (group_newpositions_pbc-center).T
 
                     if rcut: # this is skipped only if rcut is None
-                        # paso rcut de nm a Ang                        
-                        rcut = 10*rcut
+                        # paso rcut de nm a Ang                                                
                         if t_ind==0:
                             print(f"rcut: {rcut} Ang")
 
