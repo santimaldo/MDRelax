@@ -12,14 +12,20 @@ import numpy as np
 import math
 from scipy.fft import fft, fftfreq, fftshift
 
-path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
+path_MDrelax = path = "/home/santi/MD/MDRelax_results/Li-water/long/"
 path = path_MDrelax
 
 # from cut-off time, the acf is forced to zero
-cutoff_time = 50 # ps
+cutoff_time = 20 # ps
 
 
-tau0, acf0 = np.loadtxt(f"{path}/ACF_mean_over_runs.dat").T
+# tau0, acf0 = np.loadtxt(f"{path}/ACF_mean_over_runs.dat").T
+data = np.loadtxt(f"{path}/ACF_HQ.6000_ps.long.dat")
+tau0 = data[:2**18,0]
+acf0 = data[:2**18,1]
+del data
+acf0 = acf0[tau0<cutoff_time]
+tau0 = tau0[tau0<cutoff_time]
 
 acf0[tau0>cutoff_time] = 0
 N = 2**(math.ceil(np.log2(acf0.size)))

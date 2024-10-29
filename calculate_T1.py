@@ -18,17 +18,18 @@ I = 1.5  # spin 3/2
 
 
 gamma = 0.17  # Sternhemmer factor
+gamma = 0.362  # Sternhemmer factor Madrid2019
 
-
-# DME
-efg_variance = 0.0206515220481938* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
-### integral, plateau a ojo:
-# tau_c = 5 * 1e-12 # s
+# water
+efg_variance = 1.284489733637080543e-02* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
+### integral, plateau:
+tau_c = 0.1112998015707567e-12 #s
 
 ### Metodo triexp:
-As = np.array([0.34845, 0.13996, 0.49357])
-taus = np.array([0.03717, 1.01674, 11.13488])*1e-12
-tau_c = np.sum(As*taus)
+# As = np.array([0.34845, 0.13996, 0.49357])
+# taus = np.array([0.03717, 1.01674, 11.13488])*1e-12
+# tau_c = np.sum(As*taus)
+
 
 
 
@@ -46,5 +47,5 @@ CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
 R1 = CQ * (1+gamma)**2 * efg_variance * tau_c
 
 T1 = 1/R1
-
-print(f" T1 = {T1:.3f}")
+print(f" R1 = {R1:.3f} 1/s")
+print(f" T1 = {T1:.3f} s")
