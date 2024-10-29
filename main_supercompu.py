@@ -61,7 +61,7 @@ get_EFG_data(path_Gromacs, path_MDrelax,
              topology_format = topology_format,
              forcefield=forcefield,
              mdp_prefix=mdp_prefix,
-             rcut=0.9 # nm
+             rcut=0.001 # nm
              )
 print(f"EFG time: {time.time()-t0:.0f} s")
 
@@ -73,8 +73,8 @@ calculate_ACF(path_MDrelax,
               species = [cation, anion, solvent],              
               Ncations = Ncations,
               runs_prefix = runs_prefix,
-              runs_suffix = runs_suffix,
-              method='manual')             
+              runs_suffix = runs_suffix)
+              #method='manual')             
 print(f"ACF time: {time.time()-t0:.0f} s")
 
 

@@ -276,7 +276,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                                                                 backend='openMP')[0,:]
                     x_distances, y_distances, z_distances = (group_newpositions_pbc-center).T
 
-                    if rcut is not None:
+                    if rcut: # this is skipped only if rcut is None
                         # paso rcut de nm a Ang
                         rcut = 10*rcut
                         x_distances = x_distances[r_distances<rcut]
