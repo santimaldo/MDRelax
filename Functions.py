@@ -5,6 +5,7 @@ import pandas as pd
 from scipy.integrate import cumulative_trapezoid, simpson
 from scipy.signal import correlate 
 from scipy import constants
+from scipy.fft import fft, ifft
 from pathlib import Path
 import time
 
@@ -258,10 +259,10 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                                             Charges['AtomType']):
                     q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
 
-                    if q<1e-5: # si una especie no tiene carga, no calculo nada
+                    if np.abs(q)<1e-5: # si una especie no tiene carga, no calculo nada
                         continue
                     
-                    group = u.select_atoms(f"name {AtomType}")                               
+                    group = u.select_atoms(f"name {AtomType}")
                     if group.n_atoms==0: continue
                     # Calculate distances------------------
                     # Put Li in the center of the universe
@@ -351,17 +352,16 @@ def Autocorrelate(tau, EFG, method='scipy'):
                            Vxx, Vyy, Vzz, Vxy, Vxz, Vyz 
     """
     dt = tau[1]-tau[0]
-    Ntau, Nruns, Ncations, _ = EFG.shape    
-    # initialize
-    ACF = np.zeros([Ntau, Nruns, Ncations])
-    # efg_squared = np.zeros([Ntau, Nruns, Ncations])
+    Ntau, Nruns, Ncations, _ = EFG.shape            
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-    # for taking into account the symmety of EFG tensor:
-    prefactor = np.array([1,1,1,2,2,2])
-    # Nomralized by number of average points
-    normalization = Ntau - np.arange(Ntau)
-    # Metodo scipy.signal.correlate
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     if 'scipy' in method.lower():
+        # initialize
+        ACF = np.zeros([Ntau, Nruns, Ncations])
+        # for taking into account the symmety of EFG tensor:
+        prefactor = np.array([1,1,1,2,2,2])
+        # Nomralized by number of average points
+        normalization = Ntau - np.arange(Ntau)            
         print("ACF method: scipy")
         # loop over EFG matrix elements:        
         for kk in range(Nruns):
@@ -375,8 +375,28 @@ def Autocorrelate(tau, EFG, method='scipy'):
                 # acf es la suma de las correlaciones en cada ab                
                 ACF[:,kk,ll] = acf/normalization                
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    elif 'mohammadi' in method.lower():
+        # initialize:
+        ACF = np.zeros([Ntau, Nruns, Ncations])
+        # for taking into account the symmety of EFG tensor:
+        prefactor = np.array([1,1,1,2,2,2])
+        # Nomralized by number of average points
+        normalization = Ntau - np.arange(Ntau)            
+        print("ACF method: Mohammadi-Jerschow(2020)")
+        # loop over EFG matrix elements:        
+        for kk in range(Nruns):            
+            for ll in range(Ncations):                                        
+                acf_ft = np.zeros(Ntau).astype('complex128')
+                for ab in range(6): #ab: xx,yy,zz,xy,xz,yz               
+                    Vft = fft(EFG[:,kk,ll,ab])
+                    acf_ft += prefactor[ab]*np.conj(Vft)*Vft
+                # acf es la transformada inversa
+                ACF[:,kk,ll] = 2/3 * np.real(ifft(acf_ft))           
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # Metodo manual que yo implemente
     else: ############################## NO FUNCIONA!!!
+        print("ACF method: manual"),
         # loop over lags:        
         for jj in range(Ntau):        
             if jj%1000==0:
