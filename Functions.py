@@ -370,17 +370,19 @@ def Autocorrelate(tau, EFG, method='scipy'):
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     # Metodo manual que yo implemente
     else: ############################## NO FUNCIONA!!!
-        # loop over time:        
+        # loop over lags:        
         for jj in range(Ntau):        
             if jj%1000==0:
                 ttn = time.time()
                 print(f"    tau: {tau[jj]} ps")                        
             max_tau_index = tau.size-jj                        
-            acf_jj = np.zeros([Nruns, Ncations]) 
-            for ii in range(0,max_tau_index):                                 
-                acf_jj += np.sum(EFG[:,:,ii,:,:]*EFG[:,:,ii+jj,:,:],
-                                axis=(0,1))                    
-            ACF[jj,:,:] = acf_jj/(max_tau_index+1)           
+            EFG_wheigted = EFG*prefactor[None, None, None, :]
+            EFG_shifted = np.roll(EFG_wheigted, jj, axis=0)
+            VabVab = EFG_wheigted[jj:,:,:,:]*EFG_shifted[jj:,:,:,:]
+            sum_VabVab = np.sum(VabVab, axis=3)
+            integrate = simpson(sum_VabVab, x=tau[jj:])
+                        
+            ACF[jj,:,:] = integrate/normalization
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = =             
     return ACF
 #=========================================================
