@@ -197,7 +197,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                  runs_suffix_gro = None,
                  trajectory_format = ".trr",
                  topology_format = ".gro",
-                 forcefield="park.ff"
+                 forcefield="park.ff",
+                 rcut=None
                  ):
     """
     Function for reading GROMACS data and calculating the EFG
@@ -274,6 +275,14 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                                                                 group_newpositions_pbc,
                                                                 backend='openMP')[0,:]
                     x_distances, y_distances, z_distances = (group_newpositions_pbc-center).T
+
+                    if rcut is not None:
+                        # paso rcut de nm a Ang
+                        rcut = 10*rcut
+                        x_distances = x_distances[r_distances<rcut]
+                        y_distances = y_distances[r_distances<rcut]
+                        z_distances = z_distances[r_distances<rcut]
+                        r_distances = r_distances[r_distances<rcut]
                     
                     if cation in AtomType:    
                         # Quito la distancia cero, i.e, entre la "autodistancia"

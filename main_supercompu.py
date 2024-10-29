@@ -49,20 +49,21 @@ topology_format = ".tpr" # ".tpr" or ".gro"
 # topology_format = ".gro" # ".tpr" or ".gro"
 # forcefield = "Madrid.ff"
 
-# t0 = time.time()
-# get_EFG_data(path_Gromacs, path_MDrelax,
-#              species = [cation, anion, solvent],
-#              species_itp = [cation_itp, anion_itp, solvent_itp],
-#              Ncations = Ncations,
-#              runs_prefix = runs_prefix,
-#              runs_suffix = runs_suffix,
-#              runs_suffix_gro = runs_suffix_gro,
-#              trajectory_format = trajectory_format,
-#              topology_format = topology_format,
-#              forcefield=forcefield,
-#              mdp_prefix=mdp_prefix
-#              )
-# print(f"EFG time: {time.time()-t0:.0f} s")
+t0 = time.time()
+get_EFG_data(path_Gromacs, path_MDrelax,
+             species = [cation, anion, solvent],
+             species_itp = [cation_itp, anion_itp, solvent_itp],
+             Ncations = Ncations,
+             runs_prefix = runs_prefix,
+             runs_suffix = runs_suffix,
+             runs_suffix_gro = runs_suffix_gro,
+             trajectory_format = trajectory_format,
+             topology_format = topology_format,
+             forcefield=forcefield,
+             mdp_prefix=mdp_prefix,
+             rcut=0.9 # nm
+             )
+print(f"EFG time: {time.time()-t0:.0f} s")
 
 #%%
 
