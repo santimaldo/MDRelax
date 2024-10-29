@@ -214,6 +214,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
     runs_gro = [f"{runs_prefix}{runsuf}" for runsuf in runs_suffix_gro]    
     if rcut: # this skipped only if rcut is None
         rcut = 10*rcut
+    # creates the savepath if it doesn't exist
+    Path(path_MDrelax).mkdir(parents=True, exist_ok=True)
     #---------------------------------------------------
     # get_dt() takes the .mdp file
     dt = get_dt(f"{path_Gromacs}{mdp_prefix}.mdp", trajectory_format)
