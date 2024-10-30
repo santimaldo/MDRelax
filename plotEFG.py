@@ -29,9 +29,10 @@ for t in range(6,7):
     fig.tight_layout()
 
 
-    Vsquarred = np.mean(np.sum(efgs*efgs, axis=1))
+    prefactor=np.array([1,1,1,2,2,2])
+    Vsquarred = np.mean(np.sum(efgs*efgs*prefactor, axis=1))
     print(f"<V^2>: {Vsquarred:.3e}")
-    Vsquarred = np.sum(np.mean(efgs*efgs, axis=0), axis=1)
+    Vsquarred = np.sum(prefactor*np.mean(efgs*efgs, axis=0))
     print(f"<V^2>: {Vsquarred:.3e}")
 # fig.savefig(f"{path}/Figuras/ACF_mean-over-runs_zoom.png")
 
