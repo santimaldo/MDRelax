@@ -980,7 +980,7 @@ def plot_ACF(path_MDrelax,
     ax.hlines(corr_time, 
             tau_range[0],
             tau_range[-1], 
-            ls='--', color='R', lw = 1.5,
+            ls='--', color='r', lw = 1.5,
             label=f"~{corr_time:.2f} ps")
 
     ax.legend(loc='lower right')
