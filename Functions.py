@@ -315,6 +315,8 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
 
                     if np.abs(q)<1e-5: # si una especie no tiene carga, no calculo nada
                         continue
+                    if "M" in AtomType:
+                        continue
                     
                     group = u.select_atoms(f"name {AtomType}")
                     if group.n_atoms==0: continue

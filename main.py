@@ -128,7 +128,7 @@ runs_prefix = "HQ"
 # runs_suffix = [f".{t*1000:.0f}_ps.long.freq0.1" for t in runs_inds]
 # runs_suffix_gro = [f".{t:.0f}.long.freq0.1" for t in runs_inds]
 # - - - -
-path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/short/solo_Oxigeno/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/short/solo_Hidrogeno/"
 runs_inds = range(6,11)
 mdp_prefix = "HQ.long.skip10.upto100ps"
 runs_suffix = [f".{t*1000:.0f}_ps.long.skip10.upto100ps" for t in runs_inds]
