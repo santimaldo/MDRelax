@@ -32,8 +32,8 @@ def ExpDecN(x, *params):
 names=[]
 paths=[]
 # ACF 0
-# names.append("DME-LiTFSI")
-# paths.append("/home/santi/MD/MDRelax_results/DME_LiTFSI/")
+names.append("Li+water_guardado-cada-0.001ps)
+paths.append("/home/santi/MD/MDRelax_results/Li-water/long/")
 
 # ACF 1
 # names.append(r"DME-$Li_2S_6$")
@@ -42,9 +42,6 @@ paths=[]
 # ACF 2
 # names.append(r"DME-$Li^+$")
 # paths.append("/home/santi/MD/MDRelax_results/DME_no-anion/")
-
-names.append("DME-Li+: UHQ")
-paths.append("/home/santi/MD/MDRelax_results/DME_no-anion_bigbox_UHQ/upto5ps/")
 
 # numero de exponenciales
 # tau_guess = [0.03,0.05,5,20]
@@ -55,7 +52,7 @@ A_j_guess = [0.3,0.3,0.3]
 
 # processing parameters:
 # from cut-off time, the acf is forced to zero
-cutoff_time = 80 # ps
+cutoff_time = 10 # ps
 
 
 colors_data = ['cornflowerblue', 'lightcoral', 'lightgreen']
