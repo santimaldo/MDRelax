@@ -250,8 +250,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                  trajectory_format = ".trr",
                  topology_format = ".gro",
                  forcefield="park.ff",
-                 rcut=None,
-                 factor_q = 1
+                 rcut=None
                  ):
     """
     Function for reading GROMACS data and calculating the EFG
@@ -316,11 +315,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
                     q = Charges[Charges['AtomType']==AtomType]['Charge'].values[0]
 
                     if np.abs(q)<1e-5: # si una especie no tiene carga, no calculo nada
-                        continue
-                    if "H" in AtomType:
-                        continue                    
-                    if factor_q: # rescaling the charges
-                        q = factor_q*q
+                        continue                
 
                     group = u.select_atoms(f"name {AtomType}")
                     if group.n_atoms==0: continue
