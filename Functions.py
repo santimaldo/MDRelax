@@ -287,6 +287,7 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         print(f"Number of steps: {Nsteps:.0f}")                        
         # tiempo en ps    
         t = np.arange(Nsteps)*dt
+        
         # Arreglo EFG:
         # EFG.shape --> (NtimeSteps, Ncations, 6). The "6" is for the non-equiv. EFG matrix elements
         EFG_anion = np.zeros([Nsteps, Ncations, 6])    
@@ -672,7 +673,8 @@ def plot_ACF(path_MDrelax,
             runs_prefix = "HQ",
             runs_suffix = None,                                                     
             salt = r"Li$_2$S$_6$",
-            max_tau=None):
+            max_tau=None,
+            fignum=1):
     """
     Read acf data and plot 
     """    
@@ -754,9 +756,9 @@ def plot_ACF(path_MDrelax,
     for run in runs:    
         run_ind += 1   
         # Create a figure with 1 row and 3 columns for cation, anion, solvent
-        fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=(run_ind+1)*10)
+        fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=fignum*(run_ind+1)*10)
         # Create the separate figure for the mean ACF plot
-        fig_mean, ax_mean = plt.subplots(num=(run_ind+1)*100, figsize=(8, 6))    
+        fig_mean, ax_mean = plt.subplots(num=fignum*(run_ind+1)*100, figsize=(8, 6))    
         # Assign the axes for the subplots
         ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots.flatten()
         
@@ -822,7 +824,7 @@ def plot_ACF(path_MDrelax,
 
         #---------------------------------------------------------------
         #FIGURA: ACF cumulativos----------------------------------------
-        fig, ax = plt.subplots(num=(run_ind+1)*10000)
+        fig, ax = plt.subplots(num=fignum*(run_ind+1)*10000)
         
         efg_meansq_mean_over_cations = np.mean(efg_meansq, axis=1)[run_ind]        
 
@@ -882,7 +884,7 @@ def plot_ACF(path_MDrelax,
         #---------------------------------------------------------------
     #Finally, the mean of all runs:
     # FIGURA: Autocorrelation (TOTAL mean over runs)  
-    fig, ax = plt.subplots(num=3781781746813134613543546)
+    fig, ax = plt.subplots(num=fignum*3781781746813134613543546)
     run_ind = -1
     for run in runs:    
         run_ind += 1    
@@ -907,8 +909,8 @@ def plot_ACF(path_MDrelax,
     
     #-----------------------------------------------------------------------
     # FIGURA: Mean over runs, by source    
-    fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=445454787878)
-    fig_together, ax_together = plt.subplots(num=3781781)
+    fig_subplots, ax_subplots = plt.subplots(2, 2, figsize=(10, 10), num=fignum*445454787878)
+    fig_together, ax_together = plt.subplots(num=fignum*3781781)
     run_ind = -1
     # Assign the axes for the subplots
     ax_cation, ax_anion, ax_solvent, ax_cross = ax_subplots.flatten()    
@@ -940,7 +942,7 @@ def plot_ACF(path_MDrelax,
     fig_together.savefig(f"{savepath}/Figures/ACF_mean-over-runs_by-source.png")
 
     # FIGURA: Cumulatives---------------------------------------------------
-    fig, ax = plt.subplots(num=37817817174681374681354132541354)
+    fig, ax = plt.subplots(num=fignum*37817817174681374681354132541354)
     run_ind = -1
     for run in runs:    
         run_ind += 1        
@@ -991,7 +993,8 @@ def plot_ACF(path_MDrelax,
     ax.legend(loc='lower right')
     fig.savefig(f"{savepath}/Figures/CorrelationTime_mean-over-runs.png")
 
-    
+    plt.clf()
+
     return 0
 #=========================================================
 #=========================================================
