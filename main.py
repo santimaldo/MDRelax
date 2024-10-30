@@ -115,14 +115,18 @@ runs_prefix = "HQ"
 # mdp_prefix = "HQ.long"
 # runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
 # runs_suffix_gro = [f".{t:.0f}.long" for t in runs_inds]
-path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/"
-runs_inds = range(6,11)
-mdp_prefix = "HQ"
-runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
+# path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/"
+# runs_inds = range(6,11)
+# mdp_prefix = "HQ"
+# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+# runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
+path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/freq0.1/"
+runs_inds = range(7,11)
+mdp_prefix = "HQ.long.freq0.1"
+runs_suffix = [f".{t*1000:.0f}_ps.long.freq0.1" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}.long.freq0.1" for t in runs_inds]
 
-
-trajectory_format = ".trr" # ".trr" or ".xtc"
+trajectory_format = ".xtc" # ".trr" or ".xtc"
 topology_format = ".tpr" # ".tpr" or ".gro"
 forcefield = "Madrid.ff"
 
@@ -142,7 +146,12 @@ get_EFG_data(path_Gromacs, path_MDrelax,
              )
 print(f"EFG time: {time.time()-t0:.0f} s")
 
-#%%
+runs_inds = range(6,11)
+mdp_prefix = "HQ.long.freq0.1"
+runs_suffix = [f".{t*1000:.0f}_ps.long.freq0.1" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}.long.freq0.1" for t in runs_inds]
+
+
 t0 = time.time()
 calculate_ACF(path_MDrelax,
               savepath = path_MDrelax,

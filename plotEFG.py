@@ -8,9 +8,9 @@ for t in range(6,7):
     file = f"EFG_total_HQ.{t*1000:.0f}_ps.long"
     solvent = "Water"
     salt = r"$Li^+$"
-
+    
     data = np.loadtxt(path+file+".dat")
-    data = data[::1000,:]
+    # data = data[:,:]
     tau = data[:,0]     
     efgs = data[:,1:]
     # FIGURA: Autocorrelaciones        
@@ -27,6 +27,12 @@ for t in range(6,7):
     ax.legend()
     fig.suptitle(fr"{solvent}-{salt} EFG", fontsize=16)
     fig.tight_layout()
+
+
+    Vsquarred = np.mean(np.sum(efgs*efgs, axis=1))
+    print(f"<V^2>: {Vsquarred:.3e}")
+    Vsquarred = np.sum(np.mean(efgs*efgs, axis=0), axis=1)
+    print(f"<V^2>: {Vsquarred:.3e}")
 # fig.savefig(f"{path}/Figuras/ACF_mean-over-runs_zoom.png")
 
 
