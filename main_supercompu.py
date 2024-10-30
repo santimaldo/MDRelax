@@ -15,19 +15,19 @@ import time
 
 
 forcefield = "park.ff"
-# # DME - NoAnion
-path_Gromacs = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\DME_no-anion/"
-path_MDrelax = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\DME_no-anion/"
+# # DME - small-boxes NoAnion
+path_Gromacs = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\DME_small-boxes\DME_no-anion/"
+path_MDrelax = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\DME_small-boxes\DME_no-anion/"
 cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
 cation, anion, solvent = ["Li","none", "DME"] # names
 salt = r"Li$^+$"
 Ncations = 1 # numero de Li+
-runs_inds = range(6,7)
+runs_inds = range(6,11)
 mdp_prefix = "HQ"
 runs_prefix = "HQ"
 runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
 runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
-trajectory_format = ".trr" # ".trr" or ".xtc"
+trajectory_format = ".xtc" # ".trr" or ".xtc"
 topology_format = ".tpr" # ".tpr" or ".gro"
 
 
@@ -39,7 +39,7 @@ topology_format = ".tpr" # ".tpr" or ".gro"
 # # salt = r"Li$^+$"
 # salt = r"Li$^+$"
 # Ncations = 1 # numero de Li+
-# runs_inds = range(6,7)
+# runs_inds = range(7,11)
 # runs_prefix = "HQ"
 # mdp_prefix = "HQ.long"
 # runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
@@ -48,6 +48,24 @@ topology_format = ".tpr" # ".tpr" or ".gro"
 # trajectory_format = ".xtc" # ".trr" or ".xtc"
 # topology_format = ".gro" # ".tpr" or ".gro"
 # forcefield = "Madrid.ff"
+
+
+
+##################################################
+# # DME - small-boxes PS
+path_Gromacs = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\DME_small-boxes\DME_PS/"
+path_MDrelax = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\DME_small-boxes\DME_PS/skip10/"
+cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","none", "DME"] # names
+salt = r"Li$^+$"
+Ncations = 2 # numero de Li+
+runs_inds = range(6,11)
+mdp_prefix = "HQ.skip10"
+runs_prefix = "HQ"
+runs_suffix = [f".{t*1000:.0f}_ps.skip10" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}.skip10" for t in runs_inds]
+trajectory_format = ".xtc" # ".trr" or ".xtc"
+topology_format = ".tpr" # ".tpr" or ".gro"
 
 t0 = time.time()
 get_EFG_data(path_Gromacs, path_MDrelax,
@@ -60,12 +78,11 @@ get_EFG_data(path_Gromacs, path_MDrelax,
              trajectory_format = trajectory_format,
              topology_format = topology_format,
              forcefield=forcefield,
-             mdp_prefix=mdp_prefix,
-             rcut=0.001 # nm
+             mdp_prefix=mdp_prefix
+            #  rcut=0.9 # nm
              )
 print(f"EFG time: {time.time()-t0:.0f} s")
 
-#%%
 
 t0 = time.time()
 calculate_ACF(path_MDrelax,
@@ -77,7 +94,7 @@ calculate_ACF(path_MDrelax,
               #method='manual')             
 print(f"ACF time: {time.time()-t0:.0f} s")
 
-
+#%%
 t0 = time.time()
 plot_ACF(path_MDrelax,
               savepath = path_MDrelax,
@@ -86,6 +103,5 @@ plot_ACF(path_MDrelax,
               Ncations = Ncations,
               runs_prefix = runs_prefix,
               runs_suffix = runs_suffix,
-              max_tau = 2)             
+              max_tau = 10)             
 print(f"plots time: {time.time()-t0:.0f} s")
-# %%
