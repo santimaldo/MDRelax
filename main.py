@@ -49,94 +49,56 @@ topology_format = ".tpr" # ".tpr" or ".gro"
 
 
 
-######  DME-PS / TEGDME-PS
-# path_Gromacs = "/home/santi/mendieta/DME_PS/"
-# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_PS/"
-# cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
-# cation, anion, solvent = ["Li","S6", "DME"] # names
-
-# path_Gromacs = "/home/santi/mendieta/TEGDME_PS/"
-# path_MDrelax = "/home/santi/MD/MDRelax_results/TEGDME_PS/"
-# cation_itp, anion_itp, solvent_itp = ["Li","S6", "tegdme"] # as in .itp files
-# cation, anion, solvent = ["Li","S6", "TGD"] # names
-# # salt = r"Li$^+$"
-# salt = r"Li$_2$S$_6$"
-# Ncations = 40 # numero de Li+
-
-# runs_inds = range(6,11)
-# runs_prefix = "HQ"
-# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.Li2S6" for t in runs_inds]
-# trajectory_format = ".trr" # ".trr" or ".xtc"
-# topology_format = ".gro" # ".tpr" or ".gro"
-
-#######  DME-LiTFSI
-# path_Gromacs = "/home/santi/mendieta/DME_LiTFSI/"
-# path_MDrelax = "/home/santi/MD/MDRelax_results/DME_LiTFSI/"
-# cation_itp, anion_itp, solvent_itp = ["Li","TFS_DME", "DME_7CB8A2"] # as in .itp files
-# cation, anion, solvent = ["Li","TFS", "DME"] # names
-# salt = r"LiTFSI"
-# Ncations = 40 # numero de Li+
-# runs_inds = range(6,11)
-# runs_prefix = "HQ"
-# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.LiTFSI" for t in runs_inds]
-# trajectory_format = ".trr" # ".trr" or ".xtc"
-# topology_format = ".gro" # ".tpr" or ".gro"
-
-
-# #######  TEGDME-LiTFSI
-# path_Gromacs = "/home/santi/mendieta/TEGDME_LiTFSI/"
-# path_MDrelax = "/home/santi/MD/MDRelax_results/TEGDME_LiTFSI/"
-# cation_itp, anion_itp, solvent_itp = ["Li","TFS_TEGDME", "tegdme"] # as in .itp files
-# cation, anion, solvent = ["Li","TFS", "TGD"] # names
-# # salt = r"Li$^+$"
-# salt = r"Li$_2$S$_6$"
-# Ncations = 40 # numero de Li+
-# runs_inds = range(6,11)
-# runs_prefix = "HQ"
-# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.LiTFSI" for t in runs_inds]
-
-# trajectory_format = ".xtc" # ".trr" or ".xtc"
-# topology_format = ".gro" # ".tpr" or ".gro"
-
-
-#######  Li+ - water
-path_Gromacs = "/home/santi/mendieta/Li-water/"
-cation_itp, anion_itp, solvent_itp = ["Li","none", "tip4p"] # as in .itp files
-cation, anion, solvent = ["Li","none", "SOL"] # names
-salt = r"Li$^+$"
-Ncations = 1 # numero de Li+
-runs_prefix = "HQ"
-# - - - -
-# path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/long/"
-# runs_inds = range(6,11)
-# mdp_prefix = "HQ.long"
-# runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.long" for t in runs_inds]
-# - - - -
-# path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/"
-# runs_inds = range(6,11)
-# mdp_prefix = "HQ"
-# runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
-# - - - -
-# path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/freq0.1/"
-# runs_inds = range(6,11)
-# mdp_prefix = "HQ.long.freq0.1"
-# runs_suffix = [f".{t*1000:.0f}_ps.long.freq0.1" for t in runs_inds]
-# runs_suffix_gro = [f".{t:.0f}.long.freq0.1" for t in runs_inds]
-# - - - -
-path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/short/solo_Hidrogeno/"
+######  DME-PS 
+path_Gromacs = "/home/santi/mendieta/DME_small-boxes/DME_PS/run_10ns/"
+path_MDrelax = "/home/santi/MD/MDRelax_results/DME_small-boxes/DME_PS/run_10ns/"
+cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","S6", "DME"] # names
+salt = r"Li$_2$S$_6$"
+Ncations = 2 # numero de Li+
 runs_inds = range(6,11)
-mdp_prefix = "HQ.long.skip10.upto100ps"
-runs_suffix = [f".{t*1000:.0f}_ps.long.skip10.upto100ps" for t in runs_inds]
-runs_suffix_gro = [f".{t:.0f}.long.skip10.upto100ps" for t in runs_inds]
-# - - - -
+runs_prefix = "HQ"
+runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
 trajectory_format = ".xtc" # ".trr" or ".xtc"
-topology_format = ".tpr" # ".tpr" or ".gro"
-forcefield = "Madrid.ff"
+topology_format = ".gro" # ".tpr" or ".gro"
+
+
+# #######  Li+ - water
+# path_Gromacs = "/home/santi/mendieta/Li-water/"
+# cation_itp, anion_itp, solvent_itp = ["Li","none", "tip4p"] # as in .itp files
+# cation, anion, solvent = ["Li","none", "SOL"] # names
+# salt = r"Li$^+$"
+# Ncations = 1 # numero de Li+
+# runs_prefix = "HQ"
+# # - - - -
+# # path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/long/"
+# # runs_inds = range(6,11)
+# # mdp_prefix = "HQ.long"
+# # runs_suffix = [f".{t*1000:.0f}_ps.long" for t in runs_inds]
+# # runs_suffix_gro = [f".{t:.0f}.long" for t in runs_inds]
+# # - - - -
+# # path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/"
+# # runs_inds = range(6,11)
+# # mdp_prefix = "HQ"
+# # runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+# # runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
+# # - - - -
+# # path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/freq0.1/"
+# # runs_inds = range(6,11)
+# # mdp_prefix = "HQ.long.freq0.1"
+# # runs_suffix = [f".{t*1000:.0f}_ps.long.freq0.1" for t in runs_inds]
+# # runs_suffix_gro = [f".{t:.0f}.long.freq0.1" for t in runs_inds]
+# # - - - -
+# path_MDrelax = "/home/santi/MD/MDRelax_results/Li-water/short/upto1ps/"
+# runs_inds = range(6,11)
+# mdp_prefix = "HQ.long.upto10ps"
+# runs_suffix = [f".{t*1000:.0f}_ps.long.upto1ps" for t in runs_inds]
+# runs_suffix_gro = [f".{t:.0f}.long.upto1ps" for t in runs_inds]
+# # - - - -
+# trajectory_format = ".xtc" # ".trr" or ".xtc"
+# topology_format = ".tpr" # ".tpr" or ".gro"
+# forcefield = "Madrid.ff"
 
 
 t0 = time.time()
@@ -173,6 +135,6 @@ plot_ACF(path_MDrelax,
             Ncations = Ncations,
             runs_prefix = runs_prefix,
             runs_suffix = runs_suffix,
-            max_tau =  10)             
+            max_tau =  0.8)             
 print(f"plots time: {time.time()-t0:.0f} s")
 # %%
