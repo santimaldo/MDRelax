@@ -53,35 +53,35 @@ topology_format = ".tpr" # ".tpr" or ".gro"
 
 ##################################################
 # # DME - small-boxes PS
-path_Gromacs = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\DME_small-boxes\DME_PS/"
-path_MDrelax = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\DME_small-boxes\DME_PS/skip10/"
-cation_itp, anion_itp, solvent_itp = ["Li","none", "DME_7CB8A2"] # as in .itp files
-cation, anion, solvent = ["Li","none", "DME"] # names
-salt = r"Li$^+$"
+path_Gromacs = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\DME_small-boxes\DME_PS/run_100ns/"
+path_MDrelax = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\DME_small-boxes\DME_PS/run_100ns/"
+cation_itp, anion_itp, solvent_itp = ["Li","S6", "DME_7CB8A2"] # as in .itp files
+cation, anion, solvent = ["Li","S6", "DME"] # names
+salt = r"Li$_2$S$_6$"
 Ncations = 2 # numero de Li+
-runs_inds = range(6,11)
-mdp_prefix = "HQ.skip10"
+runs_inds = range(6,7)
+mdp_prefix = "HQ"
 runs_prefix = "HQ"
-runs_suffix = [f".{t*1000:.0f}_ps.skip10" for t in runs_inds]
-runs_suffix_gro = [f".{t:.0f}.skip10" for t in runs_inds]
+runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
 trajectory_format = ".xtc" # ".trr" or ".xtc"
 topology_format = ".tpr" # ".tpr" or ".gro"
 
-t0 = time.time()
-get_EFG_data(path_Gromacs, path_MDrelax,
-             species = [cation, anion, solvent],
-             species_itp = [cation_itp, anion_itp, solvent_itp],
-             Ncations = Ncations,
-             runs_prefix = runs_prefix,
-             runs_suffix = runs_suffix,
-             runs_suffix_gro = runs_suffix_gro,
-             trajectory_format = trajectory_format,
-             topology_format = topology_format,
-             forcefield=forcefield,
-             mdp_prefix=mdp_prefix
-            #  rcut=0.9 # nm
-             )
-print(f"EFG time: {time.time()-t0:.0f} s")
+# t0 = time.time()
+# get_EFG_data(path_Gromacs, path_MDrelax,
+#              species = [cation, anion, solvent],
+#              species_itp = [cation_itp, anion_itp, solvent_itp],
+#              Ncations = Ncations,
+#              runs_prefix = runs_prefix,
+#              runs_suffix = runs_suffix,
+#              runs_suffix_gro = runs_suffix_gro,
+#              trajectory_format = trajectory_format,
+#              topology_format = topology_format,
+#              forcefield=forcefield,
+#              mdp_prefix=mdp_prefix
+#             #  rcut=0.9 # nm
+#              )
+# print(f"EFG time: {time.time()-t0:.0f} s")
 
 
 t0 = time.time()
@@ -103,5 +103,6 @@ plot_ACF(path_MDrelax,
               Ncations = Ncations,
               runs_prefix = runs_prefix,
               runs_suffix = runs_suffix,
-              max_tau = 10)             
+              max_tau = 1000)             
 print(f"plots time: {time.time()-t0:.0f} s")
+# %%
