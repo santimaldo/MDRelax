@@ -18,12 +18,12 @@ I = 1.5  # spin 3/2
 
 
 gamma = 0.17  # Sternhemmer factor
-gamma = 0.362  # Sternhemmer factor Madrid2019
+# gamma = 0.362  # Sternhemmer factor Madrid2019
 
 # water
-efg_variance = 1.934259050897095891e-02* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
+efg_variance = 0.01829711095815848* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
 ### integral, plateau:
-tau_c = 5e-12 #s
+tau_c = 0.10933694855169858e-12 #s
 
 ### Metodo triexp:
 # As = np.array([0.34845, 0.13996, 0.49357])
