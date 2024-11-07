@@ -38,7 +38,16 @@ def get_Charges(species_list, path, forcefield="park.ff"):
             with open(f"{path}/{species}.charges", "w") as wf:
                 for ii in range(1000):        
                     condition_i = "[ atoms ]" in f.readline()
-                    if condition_i: 
+                    if condition_i:
+                        # is_comment = True
+                        # while is_comment: 
+                        #     line = f.readline()
+                        #     counter=0
+                        #     if line.startswith(";"):
+                        #         is_comment=False
+                        #         counter+=1
+                        #         if counter==100:
+                        #             raise Warning("READING CHARGES FAILED")
                         # guardo los headers
                         wf.write(f.readline()[1:]) #[1:] es para que no escriba el ";"
                         break        
