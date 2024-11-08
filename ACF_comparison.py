@@ -8,11 +8,28 @@ Created on Tue Sep 9 2024
 read mean ACF functions and compare and calculate T1
 """
     
-
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import curve_fit
 from Functions import cumulative_simpson
 plt.rcParams.update({'font.size': 16})
+
+# Definir función para la suma de N decaimientos exponenciales
+def multi_exponential(t, *params):
+    N = len(params) // 2
+    result = np.zeros_like(t)
+    for i in range(N):
+        A = params[i]         # Amplitud del i-ésimo término
+        tau_i = params[N + i] # Tiempo de decaimiento del i-ésimo término
+        result += A * np.exp(-t / tau_i)
+    return result
+
+# Parámetros iniciales automáticos para el ajuste
+def initial_guess(N, tau):
+    amplitudes = [1/N] * N  # Amplitudes iniciales iguales
+    times = [0.1] + [(tau[-1] * (i+1) / N) for i in range(1, N)]
+    return amplitudes + times
+
 
 
 names=[]
@@ -25,70 +42,104 @@ paths=[]
 # names.append("Li+water_guardado-cada-0.01ps")
 # paths.append("/home/santi/MD/MDRelax_results/Li-water/freq0.1/")
 
-#ACF 0
+names.append(r"DOL-LiTFSI 0.1 M")
+paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DOL/run_1ns/")
+
 names.append(r"DME-LiTFSI 0.1 M")
 paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DME/run_1ns/")
-# ACF 1
+
+names.append(r"Diglyme-LiTFSI 0.1 M")
+paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/Diglyme/run_1ns/")
+
 names.append(r"TEGDME-LiTFSI 0.1 M")
 paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/TEGDME/run_1ns/")
-# ACF 2
+
 names.append(r"ACN-LiTFSI 0.1 M")
 paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/ACN/run_1ns/")
 
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 10# ps
+cutoff_time = 100  # ps
 skipdata = 1
-fig, axs= plt.subplots(nrows=2, ncols=1,figsize=(10, 10))
-# fig, (ax, ax_resid) = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), gridspec_kw={'height_ratios': [3, 1]})
+N_exp = 4  # Número de exponenciales en la suma
+fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
+
+# Proceso de ajuste y gráficos
 for idx, (path, name) in enumerate(zip(paths, names)):
-
     data = np.loadtxt(f"{path}ACF_mean-over-runs.dat")
-    tau, ACF = data[::skipdata,0], data[::skipdata,1]
-    del data
+    tau, ACF = data[::skipdata, 0], data[::skipdata, 1]
     Vsquared_list.append(ACF[0])
-    ACF = ACF[tau<cutoff_time]    
-    tau = tau[tau<cutoff_time]    
+    ACF = ACF[tau < cutoff_time]    
+    tau = tau[tau < cutoff_time]
+
+    ACF = ACF / max(ACF)  # Normalizar ACF
+
+    # Verificar si "diglyme" o "tegdme" están en "name" (sin distinción de mayúsculas/minúsculas)
+    if "diglyme" in name.lower() or "tegdme" in name.lower():
+        # Ajuste usando múltiples exponenciales
+        initial_params = initial_guess(N_exp, tau)
+        params, _ = curve_fit(multi_exponential, tau, ACF, p0=initial_params)
+        ACF_fit = multi_exponential(tau, *params)
+
+        # Extraer amplitudes y tiempos de decaimiento
+        amplitudes = np.array(params[:N_exp])
+        times = np.array(params[N_exp:])
+        tau_c = np.sum(amplitudes*times)
+        print(name+f":  tau_c:  {tau_c} ps")
 
 
-    # FIGURA: Autocorrelaciones        
-    ACF = ACF/max(ACF)
-    ax = axs[0]
-    ax.plot(tau, ACF, 'o-', label=name, lw=1)
+        # Gráfica de ACF y ajuste
+        ax = axs[0]
+        ax.plot(tau, ACF, 'o-', label=f"{name} ACF", lw=1)
+        ax.plot(tau, ACF_fit, 'k--', lw=1)
+    else:
+        # Solo graficar ACF sin ajuste
+        ax = axs[0]
+        ax.plot(tau, ACF, 'o-', label=f"{name} ACF", lw=1)
     ax.axhline(0, color='k', ls='--')
-    ax.legend()
+    ax.legend(loc="upper right")
     ax.set_ylabel(r"$ACF$", fontsize=16)
-    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
+    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
+    ax.set_xlim([-0.1,1])
 
-
+    # Cálculo del tiempo de correlación usando Simpson
     cumulative = cumulative_simpson(ACF, x=tau, initial=0)
     tau_c_list.append(cumulative[-1])
     ax = axs[1]
     ax.plot(tau, cumulative, 'o-', label=name, lw=1)
-    ax.axhline(0, color='k', ls='--')
-    ax.legend()    
+    # Verificar si "diglyme" o "tegdme" están en "name" (sin distinción de mayúsculas/minúsculas)
+    if "diglyme" in name.lower() or "tegdme" in name.lower():
+        # Ajuste usando múltiples exponenciales
+        cumulative_FIT = cumulative_simpson(ACF_fit, x=tau, initial=0)
+        ax.plot(tau, cumulative_FIT, 'k--', lw=1)
+    ax.axhline(0, color='k', ls='--')    
+    ax.legend()
     ax.set_ylabel(r"$\int_0^{\tau} ACF(t') dt'$  [ps]", fontsize=16)
-    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)    
-ax.set_yscale('log')
-ax.set_ylim(0.01,1000)
-fig.suptitle(fr"EFG Autocorrelation Function", fontsize=16)
-fig.tight_layout()
+    ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
 
+# Configuración del gráfico final
+ax.set_yscale('log')
+ax.set_ylim(0.01, 1000)
+fig.suptitle("EFG Autocorrelation Function", fontsize=16)
+fig.tight_layout()
+plt.show()
 
 
 #%%
 
-solvents = ["DME", "TEGDME", "ACN"]
-T1_exp = [10.34, 0.708, 24.9]
-T1_err = [0.81, 0.03, 5]
+solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
+T1_exp = [13.24,10.34, 3.66, 0.708, 24.9]
+T1_err = [0.70, 0.81, 0.08, 0.03, 5]
 
 T1_exp = np.array(T1_exp)
 
+### Calculo T1 a partir de DM:
 gamma = 0.17  # Sternhemmer factor
 # gamma = 0 # Sternhemmer factor
 Vsq = np.array(Vsquared_list)
-tau_c = np.array([5.843533266714134 ,3.07493696e+02 , 0.22])
+# solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
+tau_c = np.array([3,5.84,30.00 ,281.16 , 0.22])
 e = 1.60217663 * 1e-19  # Coulomb
 hbar = 1.054571817 * 1e-34  # joule seconds
 ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
@@ -100,7 +151,7 @@ CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
 R1 = CQ * (1+gamma)**2 * efg_variance * (tau_c*1e-12)
 T1_MD = 1/R1
 
-
+#%%
 fig,ax = plt.subplots(num=7568756756)
 x = T1_exp
 y = T1_MD
