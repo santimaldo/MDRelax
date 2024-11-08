@@ -23,39 +23,41 @@ from scipy.integrate import cumulative_trapezoid
 
 #path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
 #u = mda.Universe(path+"HQ_npt-500ps_1.tpr", path+"HQ_npt-500ps_1.xtc")
-
-
-# path = "/home/santi/mendieta/DME_small-boxes/DME_PS/run_1ns/"
-# savepath = "/home/santi/tmp/"
-# u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
-
-
-file = "/home/santi/mendieta/Li-water/HQ.8.long.freq0.1"
+        
+path = "/home/santi/mendieta/DME_small-boxes/DME_LiTFSI/run_1ns/"
 savepath = "/home/santi/tmp/"
-u = mda.Universe(file+".tpr", file+".xtc")
+print("Leyendo...")
+u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
+print("listo")
 
+# file = "/home/santi/mendieta/Li-water/HQ.8.long.freq0.1"
+# savepath = "/home/santi/tmp/"
+# u = mda.Universe(file+".tpr", file+".xtc")
+
+u.transfer_to_memory(stop=1001)
 dt = u.trajectory.dt # units of ps
 ni = 40 # "number_i"
 box = u.dimensions
 
 print(f"file {file}: check ")
 H_group = u.select_atoms("name H*")
-Li_group = u.select_atoms("name Li*")
+# Li_group = u.select_atoms("name Li*")
+H_free = H_group
 
 ## selecciono los atomos de H de la "primera esfera"------------------
 # Define a distance threshold
-distance_threshold = 3.8
-# Compute the distance array
-distances = mda.lib.distances.distance_array(H_group, Li_group)
-# Create a mask for atoms within the distance threshold
-within_threshold = distances < distance_threshold
-# Determine which H atoms are within the threshold
-H_group_within_threshold = H_group[np.any(within_threshold, axis=1)]
-# Create a new AtomGroup called H_bond with the selected atoms
-H_bond = u.select_atoms('index ' + ' '.join(map(str, H_group_within_threshold.indices)))
-print("Number of selected H_bond atoms:", len(H_bond))
-#---------------------------------------------------------------------
-H_free = H_group.difference(H_bond)
+# distance_threshold = 3.8
+# # Compute the distance array
+# distances = mda.lib.distances.distance_array(H_group, Li_group)
+# # Create a mask for atoms within the distance threshold
+# within_threshold = distances < distance_threshold
+# # Determine which H atoms are within the threshold
+# H_group_within_threshold = H_group[np.any(within_threshold, axis=1)]
+# # Create a new AtomGroup called H_bond with the selected atoms
+# H_bond = u.select_atoms('index ' + ' '.join(map(str, H_group_within_threshold.indices)))
+# print("Number of selected H_bond atoms:", len(H_bond))
+# #---------------------------------------------------------------------
+# H_free = H_group.difference(H_bond)
 # n_i = len(H_bond)
 # start_time = time.time()
 # print("Comenzazmos con H_bond")
@@ -136,6 +138,18 @@ plt.loglog(frequency_free, 1/R1dispersion_free, 'o-', label="H_free")
 plt.legend()
 plt.xlabel("frequency [Hz]")
 plt.ylabel("T1 [s]")
+
+
+plt.figure(10)
+# plt.loglog(frequency_bond, 1/R1dispersion_bond_intra, 'o-', label="H_bond_intra")
+# plt.loglog(frequency_bond, 1/R1dispersion_bond_inter, 'o-', label="H_bond_inter")
+# plt.loglog(frequency_bond, 1/R1dispersion_bond, 'o-', label="H_bond")
+# plt.loglog(frequency_free, 1/R1dispersion_free_intra, 'o-', label="H_free_intra")
+# plt.loglog(frequency_free, 1/R1dispersion_free_inter, 'o-', label="H_free_inter")
+plt.loglog(frequency_free, R1dispersion_free, 'o-', label="H_free")
+plt.legend()
+plt.xlabel("frequency [Hz]")
+plt.ylabel("R1 [1/s]")
 
 
 plt.figure(2)
