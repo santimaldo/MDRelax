@@ -24,17 +24,19 @@ from scipy.integrate import cumulative_trapezoid
 #path = "../DATA/2023-12_TEGDME/500ps/frames_HQ_1/"
 #u = mda.Universe(path+"HQ_npt-500ps_1.tpr", path+"HQ_npt-500ps_1.xtc")
         
-path = "/home/santi/mendieta/DME_small-boxes/DME_LiTFSI/run_1ns/"
-savepath = "/home/santi/tmp/"
+# path = "/home/santi/mendieta/DME_small-boxes/DME_LiTFSI/run_1ns/"
+# savepath = "/home/santi/tmp/"
+file = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\DME\run_1ns/"
+savepath = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\DME\run_1ns/1H/"
 print("Leyendo...")
-u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
+u = mda.Universe(file+"HQ.6.tpr", file+"HQ.6.xtc")
 print("listo")
 
 # file = "/home/santi/mendieta/Li-water/HQ.8.long.freq0.1"
 # savepath = "/home/santi/tmp/"
 # u = mda.Universe(file+".tpr", file+".xtc")
 
-u.transfer_to_memory(stop=1001)
+u.transfer_to_memory(stop=10001)
 dt = u.trajectory.dt # units of ps
 ni = 40 # "number_i"
 box = u.dimensions
