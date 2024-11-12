@@ -21,6 +21,7 @@ from scipy.integrate import cumulative_trapezoid
 
 
 solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
+solvents = ["Diglyme","TEGDME"]
 
 T1s = []
 T2s = []
@@ -28,34 +29,36 @@ n_sol = -1
 for solvent in solvents:
     n_sol+=1
     path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
-    savepath = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\DME\run_1ns/1H/"
+    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
     print("Leyendo...")
-    u = mda.Universe(path+"HQ.6.tpr", file+"HQ.6.xtc")
+    u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
     print("listo")
 
     u.transfer_to_memory(stop=10001)
     dt = u.trajectory.dt # units of ps
-    ni = 40 # "number_i"
+    ni = 100 # "number_i"
+    # ni = 0 # AllH
     box = u.dimensions
 
     H_group = u.select_atoms("name H*")
-    Li_group = u.select_atoms("name Li*")    
+    # Li_group = u.select_atoms("name Li*")    
+    H_free = H_group
 
-    # selecciono los atomos de H de la "primera esfera"------------------
-    #Define a distance threshold
-    distance_threshold = 3.8
-    # Compute the distance array
-    distances = mda.lib.distances.distance_array(H_group, Li_group)
-    # Create a mask for atoms within the distance threshold
-    within_threshold = distances < distance_threshold
-    # Determine which H atoms are within the threshold
-    H_group_within_threshold = H_group[np.any(within_threshold, axis=1)]
-    # Create a new AtomGroup called H_bond with the selected atoms
-    H_bond = u.select_atoms('index ' + ' '.join(map(str, H_group_within_threshold.indices)))
-    print("Number of selected H_bond atoms:", len(H_bond))
-    #---------------------------------------------------------------------
-    H_free = H_group.difference(H_bond)
-    n_i = len(H_bond)
+    # # selecciono los atomos de H de la "primera esfera"------------------
+    # #Define a distance threshold
+    # distance_threshold = 3.8
+    # # Compute the distance array
+    # distances = mda.lib.distances.distance_array(H_group, Li_group)
+    # # Create a mask for atoms within the distance threshold
+    # within_threshold = distances < distance_threshold
+    # # Determine which H atoms are within the threshold
+    # H_group_within_threshold = H_group[np.any(within_threshold, axis=1)]
+    # # Create a new AtomGroup called H_bond with the selected atoms
+    # H_bond = u.select_atoms('index ' + ' '.join(map(str, H_group_within_threshold.indices)))
+    # print("Number of selected H_bond atoms:", len(H_bond))
+    # #---------------------------------------------------------------------
+    # H_free = H_group.difference(H_bond)
+    # n_i = len(H_bond)
     # start_time = time.time()
     # print("Comenzazmos con H_bond")
     # print("calculando intra...") #(si no es intra, es inter_molecular)
@@ -84,6 +87,8 @@ for solvent in solvents:
     elapsed_time = time.time() - start_time
     H_free_T1 = nmr_H_free.T1
     H_free_T2 = nmr_H_free.T2
+    T1s.append(H_free_T1)
+    T2s.append(H_free_T2)    
     print(f"{solvent}-1H-T1: {H_free_T1:.2e} s")
     print(f"{solvent}-1H-T2: {H_free_T2:.2e} s")
     print(f'Time elapsed: {elapsed_time/60} minutes')
@@ -123,4 +128,9 @@ for solvent in solvents:
     plt.legend()
     plt.xlabel(r"$\tau$ [ps]")
     plt.ylabel("ACF")
-    plt.show()
+    plt.savefig(savepath+f"{solvent}_ACF.png")
+
+fig, ax = plt.subplots(num=67862786)
+ax.bar(solvents, T1s)
+fig.suptitle(r"Molecular Dynamics $^1H$ $T_1$")
+fig.savefig(savepath+"T1.png")
