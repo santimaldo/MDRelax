@@ -60,8 +60,8 @@ paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/ACN/run_1ns/")
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 100  # ps
-skipdata = 1
+cutoff_time = 1000  # ps
+skipdata = 10
 N_exp = 4  # Número de exponenciales en la suma
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
 
@@ -76,7 +76,9 @@ for idx, (path, name) in enumerate(zip(paths, names)):
     ACF = ACF / max(ACF)  # Normalizar ACF
 
     # Verificar si "diglyme" o "tegdme" están en "name" (sin distinción de mayúsculas/minúsculas)
-    if "diglyme" in name.lower() or "tegdme" in name.lower():
+    # condicion =  "diglyme" in name.lower() or "tegdme" in name.lower()
+    condicion = False
+    if condicion:
         # Ajuste usando múltiples exponenciales
         initial_params = initial_guess(N_exp, tau)
         params, _ = curve_fit(multi_exponential, tau, ACF, p0=initial_params)
@@ -101,7 +103,7 @@ for idx, (path, name) in enumerate(zip(paths, names)):
     ax.legend(loc="upper right")
     ax.set_ylabel(r"$ACF$", fontsize=16)
     ax.set_xlabel(r"$\tau$ [ps]", fontsize=16)
-    ax.set_xlim([-0.1,1])
+    # ax.set_xlim([-0.1,1])
 
     # Cálculo del tiempo de correlación usando Simpson
     cumulative = cumulative_simpson(ACF, x=tau, initial=0)
@@ -109,7 +111,7 @@ for idx, (path, name) in enumerate(zip(paths, names)):
     ax = axs[1]
     ax.plot(tau, cumulative, 'o-', label=name, lw=1)
     # Verificar si "diglyme" o "tegdme" están en "name" (sin distinción de mayúsculas/minúsculas)
-    if "diglyme" in name.lower() or "tegdme" in name.lower():
+    if condicion:
         # Ajuste usando múltiples exponenciales
         cumulative_FIT = cumulative_simpson(ACF_fit, x=tau, initial=0)
         ax.plot(tau, cumulative_FIT, 'k--', lw=1)
@@ -126,53 +128,53 @@ fig.tight_layout()
 plt.show()
 
 
-#%%
+# #%%
 
-solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
-T1_exp = [13.24,10.34, 3.66, 0.708, 24.9]
-T1_err = [0.70, 0.81, 0.08, 0.03, 5]
-
-T1_exp = np.array(T1_exp)
-
-### Calculo T1 a partir de DM:
-gamma = 0.17  # Sternhemmer factor
-# gamma = 0 # Sternhemmer factor
-Vsq = np.array(Vsquared_list)
 # solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
-tau_c = np.array([3,5.84,30.00 ,281.16 , 0.22])
-e = 1.60217663 * 1e-19  # Coulomb
-hbar = 1.054571817 * 1e-34  # joule seconds
-ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
-Q = -4.01 * (1e-15)**2  # m**2
-I = 1.5  # spin 3/2
-# water
-efg_variance = Vsq* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
-CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
-R1 = CQ * (1+gamma)**2 * efg_variance * (tau_c*1e-12)
-T1_MD = 1/R1
+# T1_exp = [13.24,10.34, 3.66, 0.708, 24.9]
+# T1_err = [0.70, 0.81, 0.08, 0.03, 5]
 
-#%%
-fig,ax = plt.subplots(num=7568756756)
-x = T1_exp
-y = T1_MD
-if gamma==0.17:
-    label = r"Sternheimmer factor: $\gamma_{{\infty}}=$"+f"{gamma}"
-else:
-    fr"Sternheimmer factor: $\gamma={gamma}$"
-ax.scatter(x, y, label=label)
+# T1_exp = np.array(T1_exp)
 
-for i, solvent in enumerate(solvents):
-    ax.annotate(solvent, (x[i], y[i]))
-ax.set_xscale("log")
-ax.set_yscale("log")
-ax.set_xlabel(r"$T_{1,exp}$ [s]")
-# ax.set_ylabel(r"$\left(\langle V^2 \rangle \tau_c \right)^{-1}$")
-ax.set_ylabel(r"$T_{1,MD}$ [s]")
-minimo = 0.5*min(min(x),min(y))
-maximo = 2*max(max(x),max(y))
-xx = np.linspace(minimo, maximo,10)
-ax.plot(xx,xx, 'k--', label=r"$T_{1,MD}=T_{1,exp}$" )
-ax.set_xlim([minimo, maximo])
-ax.legend(fontsize=11)
-fig.suptitle(r"LiTFSI 0.1 M - $^7$Li T$_1$")
-# %%
+# ### Calculo T1 a partir de DM:
+# gamma = 0.17  # Sternhemmer factor
+# # gamma = 0 # Sternhemmer factor
+# Vsq = np.array(Vsquared_list)
+# # solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
+# tau_c = np.array([3,5.84,30.00 ,281.16 , 0.22])
+# e = 1.60217663 * 1e-19  # Coulomb
+# hbar = 1.054571817 * 1e-34  # joule seconds
+# ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
+# Q = -4.01 * (1e-15)**2  # m**2
+# I = 1.5  # spin 3/2
+# # water
+# efg_variance = Vsq* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
+# CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
+# R1 = CQ * (1+gamma)**2 * efg_variance * (tau_c*1e-12)
+# T1_MD = 1/R1
+
+# #%%
+# fig,ax = plt.subplots(num=7568756756)
+# x = T1_exp
+# y = T1_MD
+# if gamma==0.17:
+#     label = r"Sternheimmer factor: $\gamma_{{\infty}}=$"+f"{gamma}"
+# else:
+#     fr"Sternheimmer factor: $\gamma={gamma}$"
+# ax.scatter(x, y, label=label)
+
+# for i, solvent in enumerate(solvents):
+#     ax.annotate(solvent, (x[i], y[i]))
+# ax.set_xscale("log")
+# ax.set_yscale("log")
+# ax.set_xlabel(r"$T_{1,exp}$ [s]")
+# # ax.set_ylabel(r"$\left(\langle V^2 \rangle \tau_c \right)^{-1}$")
+# ax.set_ylabel(r"$T_{1,MD}$ [s]")
+# minimo = 0.5*min(min(x),min(y))
+# maximo = 2*max(max(x),max(y))
+# xx = np.linspace(minimo, maximo,10)
+# ax.plot(xx,xx, 'k--', label=r"$T_{1,MD}=T_{1,exp}$" )
+# ax.set_xlim([minimo, maximo])
+# ax.legend(fontsize=11)
+# fig.suptitle(r"LiTFSI 0.1 M - $^7$Li T$_1$")
+# # %%
