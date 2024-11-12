@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from Functions import cumulative_simpson
-plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 14})
 
 # Definir función para la suma de N decaimientos exponenciales
 def multi_exponential(t, *params):
@@ -174,5 +174,5 @@ xx = np.linspace(minimo, maximo,10)
 ax.plot(xx,xx, 'k--', label=r"$T_{1,MD}=T_{1,exp}$" )
 ax.set_xlim([minimo, maximo])
 ax.legend(fontsize=11)
-fig.suptitle("LiTFSI 0.1 M")
+fig.suptitle(r"LiTFSI 0.1 M - $^7$Li T$_1$")
 # %%
