@@ -22,19 +22,22 @@ from scipy.integrate import cumulative_trapezoid
 
 solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
 solvents = ["Diglyme","TEGDME"]
+solvents = ["TEGDME"]
 
 T1s = []
 T2s = []
 n_sol = -1
 for solvent in solvents:
     n_sol+=1
-    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
-    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
+    # path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
+    # savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
+    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/"
+    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/"
     print("Leyendo...")
     u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
     print("listo")
 
-    u.transfer_to_memory(stop=10001)
+    # u.transfer_to_memory(stop=10001)
     dt = u.trajectory.dt # units of ps
     ni = 100 # "number_i"
     # ni = 0 # AllH
