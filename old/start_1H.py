@@ -31,8 +31,8 @@ for solvent in solvents:
     n_sol+=1
     # path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
     # savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
-    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/"
-    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/"
+    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\nmolec_1000/{solvent}/"
+    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\nmolec_1000/{solvent}/"
     print("Leyendo...")
     u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
     print("listo")
