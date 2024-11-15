@@ -28,7 +28,9 @@ T1_exp = np.array(T1_exp)
 ### Calculo T1 a partir de DM:
 T1_MD = [8.80, 4.89,0.954, 0.105, 16.8]
 
-T1_MD_charmm = [None, None, None, 0.5, None]
+
+T1_exp_charmm = [1.45] 
+T1_MD_charmm = [0.5]
 
 #%%
 fig,ax = plt.subplots(num=75687567575867566)
@@ -50,10 +52,23 @@ xx = np.linspace(minimo, maximo,10)
 ax.plot(xx,xx, 'k--', label=r"$T_{1,MD}=T_{1,exp}$" )
 ax.set_xlim([minimo, maximo])
 
-x = T1_exp
+x = T1_exp_charmm
 y = T1_MD_charmm
-label = r"CHARMM"
+label = r"CHARMM36"
+solvents = ["TEGDME"]
 ax.scatter(x, y, label=label)
+for i, solvent in enumerate(solvents):
+    ax.annotate(solvent, (x[i], y[i]))
+
+
+
+x = [2.836]
+y = [3.3]
+label = r"TIP4-2005"
+solvents = ["Water"]
+ax.scatter(x, y, label=label)
+for i, solvent in enumerate(solvents):
+    ax.annotate(solvent, (x[i], y[i]))
 
 ax.legend(fontsize=11)
 fig.suptitle(r"LiTFSI 0.1 M - $^1$H T$_1$")
