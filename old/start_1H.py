@@ -21,18 +21,20 @@ from scipy.integrate import cumulative_trapezoid
 
 
 solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
-solvents = ["Diglyme","TEGDME"]
+# solvents = ["Diglyme","TEGDME"]
 solvents = ["TEGDME"]
 
 T1s = []
 T2s = []
+T1s_intra = []
+T1s_inter = []
 n_sol = -1
 for solvent in solvents:
     n_sol+=1
     # path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
     # savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
-    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/nmolec_1000//"
-    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/nmolec_1000/"
+    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/nmolec_100/"
+    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/nmolec_100/"
     print("Leyendo...")
     u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
     print("listo")
@@ -77,11 +79,11 @@ for solvent in solvents:
     # print(f'Time elapsed: {elapsed_time/60} minutes')
     #---------------------------------------------------------------
     start_time = time.time()
-    print("Continuamos con H_free")
-    # print("calculando intra...") #(si no es intra, es inter_molecular)
+    # print("Continuamos con H_free")
+    # # print("calculando intra...") #(si no es intra, es inter_molecular)
     # nmr_H_free_intra = nmrmd.NMR(u, atom_group=H_free, isotropic=True,# actual_dt=dt, 
     #                             number_i=ni, type_analysis="intra_molecular", neighbor_group=H_group)
-    # print("calculando inter...")
+    # # print("calculando inter...")
     # nmr_H_free_inter = nmrmd.NMR(u, atom_group=H_free, isotropic=True,# actual_dt=dt, 
     #                             number_i=ni, type_analysis="inter_molecular", neighbor_group=H_group)
     print("calculando total...")
@@ -91,9 +93,12 @@ for solvent in solvents:
     H_free_T1 = nmr_H_free.T1
     H_free_T2 = nmr_H_free.T2
     T1s.append(H_free_T1)
-    T2s.append(H_free_T2)    
-    print(f"{solvent}-1H-T1: {H_free_T1:.2e} s")
-    print(f"{solvent}-1H-T2: {H_free_T2:.2e} s")
+    # H_intra_T1 = nmr_H_free_intra.T1
+    # H_inter_T1 = nmr_H_free_inter.T1
+    # T1s_intra.append(H_intra_T1)
+    # T1s_inter.append(H_inter_T1)    
+    # print(f"{solvent}-1H-T1_intra: {H_intra_T1:.2e} s")
+    # print(f"{solvent}-1H-T1_inter: {H_inter_T1:.2e} s")
     print(f'Time elapsed: {elapsed_time/60} minutes')
 
     # ACF_bond_intra = nmr_H_bond_intra.gij[0,:]
@@ -104,18 +109,19 @@ for solvent in solvents:
     ACF_free = nmr_H_free.gij[0,:]
     #
     tau = np.arange(ACF_free.size)*dt
-
-    # data = np.array([tau, ACF_free, ACF_intra, ACF_inter]).T
+    #%%
     data = np.array([tau, ACF_free]).T
+    # data = np.array([tau, ACF_free_intra, ACF_free_inter]).T
     if ni!=0:
-        header = f"tau (ps)    ACF \n "\
+        header = f"tau (ps)    ACF ### ACF_intra   ACF_inter \n "\
                  f"calculated with {ni} atoms (over {H_group.n_atoms} total H atoms)"
     else:
-        header = f"tau (ps)    ACF \n "\
+        header = f"tau (ps)    ACF_intra   ACF_inter \n "\
                  f"calculated all H atoms: {H_group.n_atoms}"
     header += "\n"\
-              f"T1 = {H_free_T1:.2e} s \n"\
-              f"T2 = {H_free_T2:.2e} s"
+                f"T1 = {H_free_T1:.2e} s \n"\
+            #   f"T1intra = {H_intra_T1:.2e} s \n"\
+            #   f"T21inter = {H_inter_T1:.2e} s"
     np.savetxt(savepath+f"1H_ACF_{solvent}.dat", data, header=header)
 
 
@@ -124,9 +130,9 @@ for solvent in solvents:
     # plt.plot(np.arange(ACF_bond.size)*u.trajectory.dt, ACF_bond_intra.T, 'o-', label="H_bond_intra")
     # plt.plot(np.arange(ACF_bond.size)*u.trajectory.dt, ACF_bond_inter.T, 'o-', label="H_bond_inter")
     # plt.plot(np.arange(ACF_bond.size)*u.trajectory.dt, ACF_bond.T, 'o-', label="H_bond")
-    # plt.plot(np.arange(ACF_free.size)*u.trajectory.dt, ACF_free_intra.T, 'o-', label="H_free_intra")
-    # plt.plot(np.arange(ACF_free.size)*u.trajectory.dt, ACF_free_inter.T, 'o-', label="H_free_inter")
-    plt.plot(tau, ACF_free, 'o-', label="H_free")
+    # plt.plot(np.arange(ACF_free.size)*u.trajectory.dt, ACF_free_intra.T, 'o-', label="H_intra")
+    # plt.plot(np.arange(ACF_free.size)*u.trajectory.dt, ACF_free_inter.T, 'o-', label="H_inter")
+    plt.plot(tau, ACF_free, 'o-', label="H_free")    
     plt.axhline(0, linestyle='--', color='k')
     plt.legend()
     plt.xlabel(r"$\tau$ [ps]")
@@ -137,3 +143,5 @@ fig, ax = plt.subplots(num=67862786)
 ax.bar(solvents, T1s)
 fig.suptitle(r"Molecular Dynamics $^1H$ $T_1$")
 fig.savefig(savepath+"T1.png")
+
+# %%
