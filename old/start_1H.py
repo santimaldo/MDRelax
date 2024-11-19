@@ -92,6 +92,7 @@ for solvent in solvents:
     elapsed_time = time.time() - start_time
     H_free_T1 = nmr_H_free.T1
     H_free_T2 = nmr_H_free.T2
+    T1s.append(H_free_T1)
     # H_intra_T1 = nmr_H_free_intra.T1
     # H_inter_T1 = nmr_H_free_inter.T1
     # T1s_intra.append(H_intra_T1)
@@ -108,8 +109,8 @@ for solvent in solvents:
     ACF_free = nmr_H_free.gij[0,:]
     #
     tau = np.arange(ACF_free.size)*dt
-
-    data = np.array([tau, ACF_free, ACF_intra, ACF_inter]).T
+    #%%
+    data = np.array([tau, ACF_free]).T
     # data = np.array([tau, ACF_free_intra, ACF_free_inter]).T
     if ni!=0:
         header = f"tau (ps)    ACF ### ACF_intra   ACF_inter \n "\
@@ -142,3 +143,5 @@ fig, ax = plt.subplots(num=67862786)
 ax.bar(solvents, T1s)
 fig.suptitle(r"Molecular Dynamics $^1H$ $T_1$")
 fig.savefig(savepath+"T1.png")
+
+# %%
