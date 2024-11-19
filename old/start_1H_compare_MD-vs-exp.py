@@ -30,7 +30,7 @@ T1_MD = [8.80, 4.89,0.954, 0.105, 16.8]
 
 
 T1_exp_charmm = [1.45] 
-T1_MD_charmm = [0.5]
+T1_MD_charmm = [1.1]
 
 #%%
 fig,ax = plt.subplots(num=75687567575867566)
