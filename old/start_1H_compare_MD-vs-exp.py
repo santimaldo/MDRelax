@@ -29,8 +29,8 @@ T1_exp = np.array(T1_exp)
 T1_MD = [8.80, 4.89,0.954, 0.105, 16.8]
 
 
-T1_exp_charmm = [1.45] 
-T1_MD_charmm = [1.1]
+T1_exp_charmm = [1.45, 9.66] 
+T1_MD_charmm = [1.1, 9.25]
 
 #%%
 fig,ax = plt.subplots(num=75687567575867566)
@@ -55,10 +55,10 @@ ax.set_xlim([minimo, maximo])
 x = T1_exp_charmm
 y = T1_MD_charmm
 label = r"CHARMM36"
-solvents = ["TEGDME"]
+solvents = ["TEGDME","DME"]
 ax.scatter(x, y, label=label)
-for i, solvent in enumerate(solvents):
-    ax.annotate(solvent, (x[i], y[i]))
+# for i, solvent in enumerate(solvents):
+#     ax.annotate(solvent, (x[i], y[i]))
 
 
 
