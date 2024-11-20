@@ -22,7 +22,7 @@ from scipy.integrate import cumulative_trapezoid
 
 solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
 # solvents = ["Diglyme","TEGDME"]
-solvents = ["TEGDME"]
+solvents = ["ACN", "DME"]
 
 T1s = []
 T2s = []
