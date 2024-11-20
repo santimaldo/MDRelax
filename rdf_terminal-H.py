@@ -39,12 +39,12 @@ from Functions import *
 
 # GROMACS file
 path_Gromacs = "/home/santi/mendieta/CHARMM/TEGDME/nmolec_100/"
-file = "NPT"
+file = "HQ.6"
 terminal_1 = "H13 H12 H16"
 terminal_2 = "H1 H2 H3"
 
 # Load the Universe
-u = mda.Universe(f"{path_Gromacs}{file}.tpr", f"{path_Gromacs}{file}.trr")
+u = mda.Universe(f"{path_Gromacs}{file}.tpr", f"{path_Gromacs}{file}.xtc")
 
 # Select atoms for terminal groups
 group1 = u.select_atoms(f"name {terminal_1}")
@@ -81,21 +81,20 @@ rdf_intra /= len(u.residues)
 bins = bins[1:]  # Skip the first bin (r = 0)
 rdf_intra = rdf_intra[1:]
 
-plt.figure(1)
-plt.plot(bins, rdf_intra, '-', "CHARMM36")
-plt.xlabel(r"$H_{terminal}-H_{terminal}$ [$10^{-10}$ m]")
-plt.ylabel(r"$g(r)$")
-plt.show()
+bins_ch = bins
+rdf_ch = rdf_intra
+
+print("CHARMM listo v/")
 
 #%%##################################
 # GROMACS file
 path_Gromacs = "/home/santi/mendieta/TEGDME_small-boxes/TEGDME_LiTFSI/run_1ns/"
-file = "NPT"
-terminal_1 = "H15 H16 H17"
-terminal_2 = "H20 H21 H22"
+file = "HQ.6"
+terminal_1 = "H0S H0U H0T"
+terminal_2 = "H0Z H10 H11"
 
 # Load the Universe
-u = mda.Universe(f"{path_Gromacs}{file}.tpr", f"{path_Gromacs}{file}.trr")
+u = mda.Universe(f"{path_Gromacs}{file}.tpr", f"{path_Gromacs}{file}.xtc")
 
 # Select atoms for terminal groups
 group1 = u.select_atoms(f"name {terminal_1}")
@@ -132,12 +131,16 @@ rdf_intra /= len(u.residues)
 bins = bins[1:]  # Skip the first bin (r = 0)
 rdf_intra = rdf_intra[1:]
 
-# plt.figure(1)
-plt.plot(bins, rdf_intra, '-', "OPLS")
+bins_op = bins
+rdf_op = rdf_intra
+
+
+#%%
+plt.figure(1)
+plt.plot(bins_op, rdf_op, '-', label="OPLS")
+plt.plot(bins_ch, rdf_ch, '-', label="CHARMM36")
 plt.xlabel(r"$H_{terminal}-H_{terminal}$ [$10^{-10}$ m]")
 plt.ylabel(r"$g(r)$")
-plt.title("Intramolecular RDF")
+plt.title("TEGDME: Intramolecular RDF")
+plt.legend()
 plt.show()
-
-
-# %%
