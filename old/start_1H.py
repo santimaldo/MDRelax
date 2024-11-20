@@ -20,21 +20,28 @@ import time
 from scipy.integrate import cumulative_trapezoid
 
 
-solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
-# solvents = ["Diglyme","TEGDME"]
-solvents = ["ACN"]
+#solvents = ["DOL","DME","Diglyme","TEGDME","ACN"]
+
+solvents = ["Diglyme","DOL","DOL"]
+nmolecs = [100, 200, 100]
+
+
+
+
+
+
 
 T1s = []
 T2s = []
 T1s_intra = []
 T1s_inter = []
 n_sol = -1
-for solvent in solvents:
+for solvent, nmolec in zip(solvents, nmolecs):
     n_sol+=1
     # path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\LiTFSI_small-boxes\{solvent}\run_1ns/"
     # savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\LiTFSI_small-boxes\1H/"
-    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/nmolec_200/"
-    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/nmolec_200/"
+    path = rf"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\CHARMM\{solvent}/nmolec_{nmolec}/"
+    savepath = fr"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\CHARMM\{solvent}/nmolec_{nmolec}/"
     print("Leyendo...")
     u = mda.Universe(path+"HQ.6.tpr", path+"HQ.6.xtc")
     print("listo")
