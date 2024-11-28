@@ -42,26 +42,37 @@ paths=[]
 # names.append("Li+water_guardado-cada-0.01ps")
 # paths.append("/home/santi/MD/MDRelax_results/Li-water/freq0.1/")
 
-names.append(r"DOL-LiTFSI 0.1 M")
-paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DOL/run_1ns/")
+#############OPLS
+# names.append(r"DOL-LiTFSI 0.1 M")
+# paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DOL/run_1ns/")
 
-names.append(r"DME-LiTFSI 0.1 M")
-paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DME/run_1ns/")
+# names.append(r"DME-LiTFSI 0.1 M")
+# paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/DME/run_1ns/")
 
-names.append(r"Diglyme-LiTFSI 0.1 M")
-paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/Diglyme/run_1ns/")
+# names.append(r"Diglyme-LiTFSI 0.1 M")
+# paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/Diglyme/run_1ns/")
 
-names.append(r"TEGDME-LiTFSI 0.1 M")
-paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/TEGDME/run_1ns/")
+# names.append(r"TEGDME-LiTFSI 0.1 M")
+# paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/TEGDME/run_1ns/")
 
-names.append(r"ACN-LiTFSI 0.1 M")
-paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/ACN/run_1ns/")
+# names.append(r"ACN-LiTFSI 0.1 M")
+# paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/ACN/run_1ns/")
+
+
+names.append(r"DOL-Li$^+$ 0.1 M - charmm36")
+paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DOL_no-anion/")
+
+names.append(r"DME-Li$^+$ 0.1 M - charmm36")
+paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DME_no-anion/")
+
+names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
+paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
 
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 1000  # ps
-skipdata = 10
+cutoff_time = 2  # ps
+skipdata = 1
 N_exp = 4  # Número de exponenciales en la suma
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
 
