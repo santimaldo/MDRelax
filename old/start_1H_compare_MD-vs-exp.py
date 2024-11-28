@@ -29,8 +29,12 @@ T1_exp = np.array(T1_exp)
 T1_MD = [8.80, 4.89,0.954, 0.105, 16.8]
 
 
-T1_exp_charmm = [11.74, 1.45, 9.66, 4.50, 14.51] 
+T1_exp_charmm = [11.74, 1.45, 9.66, 4.50, 16.5] 
 T1_MD_charmm = [13.2, 1.1, 9.25, 2.15, 31.7]
+
+
+T1_exp_charmm_all_proton = [11.74, 9.66, 4.50, 16.5]
+T1_MD_charmm_all_proton = [11.8, 9.84, 2.41,28.1]
 
 #%%
 fig,ax = plt.subplots(num=75687567575867566)
@@ -55,10 +59,12 @@ ax.set_xlim([minimo, maximo])
 x = T1_exp_charmm
 y = T1_MD_charmm
 label = r"CHARMM36"
-solvents = ["TEGDME","DME"]
 ax.scatter(x, y, label=label)
-# for i, solvent in enumerate(solvents):
-#     ax.annotate(solvent, (x[i], y[i]))
+
+x = T1_exp_charmm_all_proton
+y = T1_MD_charmm_all_proton
+label = r"CHARMM36 - T1-ALL-PROTON"
+ax.scatter(x, y, label=label, marker='x', color='red')
 
 
 
@@ -66,7 +72,7 @@ x = [2.836]
 y = [3.3]
 label = r"TIP4-2005"
 solvents = ["Water"]
-ax.scatter(x, y, label=label)
+ax.scatter(x, y, label=label, marker='x', color='g')
 for i, solvent in enumerate(solvents):
     ax.annotate(solvent, (x[i], y[i]))
 
