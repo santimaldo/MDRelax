@@ -2,27 +2,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-path = "/home/santi/MD/MDRelax_results/Li-water/long/"
+# names.append(r"DOL-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DOL_no-anion/")
+# names.append(r"DME-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DME_no-anion/"
+# names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
 
+path = "/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/"
+solvent = "TEGDME"
+salt = r"$Li^+$"
+    
+# SOLO MUESTRO EL PRIMER ION
 for t in range(6,7):
-    file = f"EFG_total_HQ.{t*1000:.0f}_ps.long"
-    solvent = "Water"
-    salt = r"$Li^+$"
+    file = f"EFG_total_HQ.{t*1000:.0f}_ps"
     
     data = np.loadtxt(path+file+".dat")
     # data = data[:,:]
     tau = data[:,0]     
-    efgs = data[:,1:]
+    efgs = data[:,1:7]
     # FIGURA: Autocorrelaciones        
     fig, ax = plt.subplots(num=t)
     label = ["Vxx","Vyy","Vzz","Vxy","Vxz","Vyz"]
     for ii in range(6):
         ax.plot(tau, efgs[:,ii], 'o-', label=label[ii], lw=3)#, color='k')
 
+    trace = np.sum(efgs[:, 1:4], axis=1)
+    ax.plot(tau, trace, 'k', label="Tr(V)")
     ax.axhline(0, color='k', ls='--')
     ax.set_ylabel(r"EFG $[e\AA^{-3} / 4\pi\varepsilon_0]$", fontsize=16)
     ax.set_xlabel(r"$t$ [ps]", fontsize=16)    
-    ax.set_xlim(-0.01, 1)
+    # ax.set_xlim(-0.01, 1)
     # ax.set_ylim(0.006, 0.025)
     ax.legend()
     fig.suptitle(fr"{solvent}-{salt} EFG", fontsize=16)
