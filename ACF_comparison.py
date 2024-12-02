@@ -7,13 +7,14 @@ Created on Tue Sep 9 2024
 
 read mean ACF functions and compare and calculate T1
 """
-    
+
+import matplotlib
+matplotlib.use('Qt5Agg')  # Cambia el backend: modo interactivo    
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from Functions import cumulative_simpson
 plt.rcParams.update({'font.size': 14})
-
 # Definir función para la suma de N decaimientos exponenciales
 def multi_exponential(t, *params):
     N = len(params) // 2
@@ -71,9 +72,9 @@ paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 2  # ps
-skipdata = 1
-N_exp = 4  # Número de exponenciales en la suma
+cutoff_time = 1000  # ps
+skipdata = 10
+N_exp = 3  # Número de exponenciales en la suma
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
 
 # Proceso de ajuste y gráficos
@@ -139,31 +140,27 @@ fig.tight_layout()
 plt.show()
 
 
-# #%%
+#%%
+### Calculo T1 a partir de DM:
+gamma = 0.17  # Sternhemmer factor
+# gamma = 0 # Sternhemmer factor
+Vsq = np.array(Vsquared_list)
+solvents = ["DOL", "DME", "TEGDME"]
+tau_c = np.array([1.5, 0.8, 75])
+e = 1.60217663 * 1e-19  # Coulomb
+hbar = 1.054571817 * 1e-34  # joule seconds
+ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
+Q = -4.01 * (1e-15)**2  # m**2
+I = 1.5  # spin 3/2
+# water
+efg_variance = Vsq* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
+CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
+R1 = CQ * (1+gamma)**2 * efg_variance * (tau_c*1e-12)
+T1_MD = 1/R1
 
-# solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
-# T1_exp = [13.24,10.34, 3.66, 0.708, 24.9]
-# T1_err = [0.70, 0.81, 0.08, 0.03, 5]
-
-# T1_exp = np.array(T1_exp)
-
-# ### Calculo T1 a partir de DM:
-# gamma = 0.17  # Sternhemmer factor
-# # gamma = 0 # Sternhemmer factor
-# Vsq = np.array(Vsquared_list)
-# # solvents = ["DOL", "DME", "Diglyme" , "TEGDME", "ACN"]
-# tau_c = np.array([3,5.84,30.00 ,281.16 , 0.22])
-# e = 1.60217663 * 1e-19  # Coulomb
-# hbar = 1.054571817 * 1e-34  # joule seconds
-# ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
-# Q = -4.01 * (1e-15)**2  # m**2
-# I = 1.5  # spin 3/2
-# # water
-# efg_variance = Vsq* ke**2 * e**2 / (1e-10)**6 # (V/m)^2
-# CQ = (2*I+3)*(e*Q/hbar)**2 / (I**2 * (2*I-1)) * (1/20)
-# R1 = CQ * (1+gamma)**2 * efg_variance * (tau_c*1e-12)
-# T1_MD = 1/R1
-
+print("T1 by MD:")
+for solvent, T1 in zip(solvents, T1_MD):
+    print(f"{solvent} :   {T1:.2e} s")
 # #%%
 # fig,ax = plt.subplots(num=7568756756)
 # x = T1_exp
@@ -189,3 +186,5 @@ plt.show()
 # ax.legend(fontsize=11)
 # fig.suptitle(r"LiTFSI 0.1 M - $^7$Li T$_1$")
 # # %%
+
+# %%
