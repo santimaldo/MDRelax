@@ -14,21 +14,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-# path = "C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\Diffusion\Diglyme_PS/"
-# savepath = "C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\Diffusion\Diglyme_PS/"
-# file = "npt_diff"
-# trajectory_extension = ".xtc"
+path = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\Diffusion\Diglyme_PS/"
+savepath = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\Diffusion\Diglyme_PS/"
+file = "npt_diff"
+trajectory_extension = ".xtc"
 
-path = "/home/santi/mendieta/Diglyme_small-boxes/Diglyme_LiTFSI/run_1ns/"
-savepath = path
-file = "NPT"
-trajectory_extension = ".trr"
+# path = "/home/santi/mendieta/Diglyme_small-boxes/Diglyme_LiTFSI/run_1ns/"
+# savepath = path
+# file = "NPT"
+# trajectory_extension = ".trr"
 
 solvent = "DIG"
 cation = "Lij"
 anion = "TFS"
 # defino para quien calculo:
-selected = solvent
+selected = cation
 
 
 u = mda.Universe(path+file+".tpr", path+file+trajectory_extension)
@@ -41,7 +41,7 @@ Ntimes = len(u.trajectory)
 rmsd_results = np.zeros(Ntimes)
 ti = time.time()                
 # Iterar sobre los frames de referencia (t0)
-np.arange(0,500001,5000)
+t0s = np.arange(0,500001,5000)
 for t0 in t0s: 
     u.trajectory[t0]  # Mover el universo al frame t0 (fijar referencia)
 
