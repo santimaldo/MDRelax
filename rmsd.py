@@ -13,8 +13,8 @@ import MDAnalysis.analysis.rms as rms
 import matplotlib.pyplot as plt
 import numpy as np
 
-path = "C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\Diffusion\Diglyme_PS/"
-savepath = "C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\Diffusion\Diglyme_PS/"
+path = r"C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\Diffusion\Diglyme_PS/"
+savepath = r"C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\Diffusion\Diglyme_PS/"
 file = "npt_diff"
 
 solvent = "DIG"
@@ -23,7 +23,7 @@ anion = "TFS"
 
 trajectory_extension = ".xtc"
 # defino para quien calculo:
-selected = cation
+selected = solvent
 
 
 u = mda.Universe(path+file+".tpr", path+file+trajectory_extension)
