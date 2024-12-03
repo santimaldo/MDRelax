@@ -246,6 +246,7 @@ def calculate_EFGMS(EFG, axis=0):
 #=========================================================
 #=========================================================
 
+
 #=========================================================
 #=========================================================
 def get_EFG_data(path_Gromacs, path_MDrelax,
@@ -287,6 +288,9 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         run_gro = runs_gro[idx]
         u = mda.Universe(f"{path_Gromacs}{run_gro}{topology_format}",
                          f"{path_Gromacs}{run_gro}{trajectory_format}")    
+        
+        if idx==0:
+            check_total_charge(Charges, u)
         print(u)                         
         box=u.dimensions
         center = box[0:3]/2
