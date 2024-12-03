@@ -13,14 +13,15 @@ import MDAnalysis.analysis.rms as rms
 import matplotlib.pyplot as plt
 import numpy as np
 
-path = "/home/santi/mendieta/Diglyme_small-boxes/Diglyme_LiTFSI/run_1ns/"
-file = "NPT"
+path = "C:\Users\Usuario\Documents\SantiM\MDdata\mendieta\Diffusion\Diglyme_PS/"
+savepath = "C:\Users\Usuario\Documents\SantiM\MDdata\MDrelax_results\Diffusion\Diglyme_PS/"
+file = "npt_diff"
 
 solvent = "DIG"
 cation = "Lij"
 anion = "TFS"
 
-trajectory_extension = ".trr"
+trajectory_extension = ".xtc"
 # defino para quien calculo:
 selected = cation
 
@@ -41,7 +42,7 @@ print(f"tiempo de ejecucion:   {tf-t0} s")
 rmsd = R.results.rmsd   # transpose makes it easier for plotting
 header = "index\ttime[ps]\tRMSD[Ang]\n"
 header += f"based on {selected_atoms.n_atoms} atoms from {selected} group"
-np.savetxt(path+file+f"_{selected}-RMSD.dat", rmsd, header=header)
+np.savetxt(savepath+file+f"_{selected}-RMSD.dat", rmsd, header=header)
 
 time = rmsd[:,1]
 
@@ -51,5 +52,5 @@ ax.plot(time/1000, rmsd[:,2], label=selected)
 ax.legend(loc="best")
 ax.set_xlabel("time (ns)")
 ax.set_ylabel(r"RMSD ($\AA$)")
-# fig.savefig("rmsd_all_CORE_LID_NMP_ref1AKE.pdf")
+fig.savefig(f"{savepath}RMSD_{selected}.png")
 # %%
