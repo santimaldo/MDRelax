@@ -41,10 +41,11 @@ Ntimes = len(u.trajectory)
 rmsd_results = np.zeros(Ntimes)
 ti = time.time()                
 # Iterar sobre los frames de referencia (t0)
-t0s = np.arange(0,500001,5000)
+t0s = np.arange(0,50001,500)
+last_index = Ntimes - t0s[-1]
 for t0 in t0s: 
     u.trajectory[t0]  # Mover el universo al frame t0 (fijar referencia)
-
+    
     # Configurar RMSD con el frame de referencia actual (t0)
     R = rms.RMSD(u,
                  select=selection_str,
@@ -59,13 +60,14 @@ for t0 in t0s:
 
     # Filtrar solo tiempos posteriores
     rmsd_post_t0 = R.rmsd[t0:, 2]  # RMSD (Ångstroms) para frames después de t0
-    
+    print(f"t0: {t0},  results shape: {R.rmsd.shape}")
     rmsd_results[0:len(rmsd_post_t0)] += rmsd_post_t0
+    del rmsd_post_t0
     
 # calculo el promedio de RMSD solo para el caso en que tienen la misma cantidad de frames    
-last_time = Ntimes - t0s[-1]
-rmsd = rmsd_results[:last_time]/len(t0s)
-times = times[:last_time]
+last_index = Ntimes - t0s[-1]
+rmsd = rmsd_results[:last_index]/len(t0s)
+times = times[:last_index]
 # Output de los resultados
 tf = time.time()
 print(f"tiempo de ejecucion total:   {tf-ti} s") 
