@@ -66,6 +66,9 @@ paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DOL_no-anion/")
 names.append(r"DME-Li$^+$ 0.1 M - charmm36")
 paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DME_no-anion/")
 
+names.append(r"Diglyme-Li$^+$ 0.1 M - charmm36")
+paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/Diglyme_no-anion/")
+
 names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
 paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
 
@@ -145,8 +148,8 @@ plt.show()
 gamma = 0.17  # Sternhemmer factor
 # gamma = 0 # Sternhemmer factor
 Vsq = np.array(Vsquared_list)
-solvents = ["DOL", "DME", "TEGDME"]
-tau_c = np.array([1.5, 0.8, 75])
+solvents = ["DOL", "DME", "Diglyme","TEGDME"]
+tau_c = np.array([0.8, 1.5, 9,  75])
 e = 1.60217663 * 1e-19  # Coulomb
 hbar = 1.054571817 * 1e-34  # joule seconds
 ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
