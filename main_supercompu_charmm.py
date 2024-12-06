@@ -13,9 +13,9 @@ import numpy as np
 from Functions import get_EFG_data, calculate_ACF, plot_ACF
 import time
 
-solvents = ["Diglyme", "ACN", "TEGDME", "DME", "DOL"] # as in folders
-solvents_itp = ["DIG", "ACN", "TGD", "DME", "DIOL"] # as in itp
-solvents_id = ["DIG", "ACN", "TGD", "DME", "DIOL"] # as in resname
+solvents = ["Diglyme", "ACN", "DME", "DOL", "TEGDME"] # as in folders
+solvents_itp = ["DIG", "ACN", "DME", "DIOL", "TGD"] # as in itp
+solvents_id = ["DIG", "ACN", "DME", "DIOL", "TGD"] # as in resname
 
 for solvent, solvent_itp, solvent_id in zip(solvents, solvents_itp, solvents_id):
     print("="*50)
