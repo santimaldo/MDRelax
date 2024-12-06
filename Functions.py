@@ -289,8 +289,6 @@ def get_EFG_data(path_Gromacs, path_MDrelax,
         u = mda.Universe(f"{path_Gromacs}{run_gro}{topology_format}",
                          f"{path_Gromacs}{run_gro}{trajectory_format}")    
         
-        if idx==0:
-            check_total_charge(Charges, u)
         print(u)                         
         box=u.dimensions
         center = box[0:3]/2
