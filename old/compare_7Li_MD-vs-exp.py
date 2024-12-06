@@ -41,10 +41,10 @@ ax.legend(fontsize=11)
 fig.suptitle(r"LiTFSI 0.1 M - T$_1$ - MD vs Experimental")
 
 
-solvents = ["DOL", "DME", "Diglyme","TEGDME"]
+solvents = ["DOL", "DME", "Diglyme","TEGDME", "ACN"]
 ### CHARMM
-T1_MD = np.array([18.5, 12.5, 1.85,0.202])
-T1_exp = np.array([13.24 , 10.34, 3.66,0.708])
+T1_MD = np.array([18.5, 12.5, 1.85,0.202, 73.3])
+T1_exp = np.array([13.24 , 10.34, 3.66,0.708, 24.9])
 x = T1_exp
 y = T1_MD
 label = r"CHARMM"

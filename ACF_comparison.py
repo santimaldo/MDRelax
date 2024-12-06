@@ -72,11 +72,14 @@ paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/Diglyme_no-anion
 names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
 paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
 
+names.append(r"ACN-Li$^+$ 0.1 M - charmm36")
+paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/ACN_no-anion/")
+
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 1000  # ps
-skipdata = 10
+cutoff_time = 400  # ps
+skipdata = 1
 N_exp = 3  # Número de exponenciales en la suma
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
 
@@ -148,8 +151,8 @@ plt.show()
 gamma = 0.17  # Sternhemmer factor
 # gamma = 0 # Sternhemmer factor
 Vsq = np.array(Vsquared_list)
-solvents = ["DOL", "DME", "Diglyme","TEGDME"]
-tau_c = np.array([0.8, 1.5, 9,  75])
+solvents = ["DOL", "DME", "Diglyme","TEGDME", "ACN"]
+tau_c = np.array([0.88, 1.5, 9,  72, 0.29])
 e = 1.60217663 * 1e-19  # Coulomb
 hbar = 1.054571817 * 1e-34  # joule seconds
 ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
