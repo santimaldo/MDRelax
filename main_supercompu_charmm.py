@@ -27,8 +27,8 @@ for solvent, solvent_itp, solvent_id in zip(solvents, solvents_itp, solvents_id)
     cation_itp, anion_itp, solvent_itp = [f"LIT_{solvent_itp}","none", solvent_itp] # as in .itp files
     cation, anion, solvent = ["LIT","none", solvent_id] # names
     salt = r"Li$^+$"
-    Ncations = 4   # numero de Li+
-    runs_inds = range(6,11) # range(6,11)
+    Ncations = 1   # numero de Li+
+    runs_inds = range(6,16) # range(6,11)
     mdp_prefix = "HQ"
     runs_prefix = "HQ"
     runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
@@ -72,7 +72,7 @@ for solvent, solvent_itp, solvent_id in zip(solvents, solvents_itp, solvents_id)
                 Ncations = Ncations,
                 runs_prefix = runs_prefix,
                 runs_suffix = runs_suffix,
-                max_tau = 150,
+                max_tau = 500,
                 fignum=int(np.random.random()*1e10) # to avoid superposition of graphs
                 )             
     print(f"plots time: {time.time()-t0:.0f} s")
