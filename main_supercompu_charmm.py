@@ -27,10 +27,10 @@ for solvent, solvent_itp, solvent_id in zip(solvents, solvents_itp, solvents_id)
     cation_itp, anion_itp, solvent_itp = [f"LIT_{solvent_itp}","none", solvent_itp] # as in .itp files
     cation, anion, solvent = ["LIT","none", solvent_id] # names
     salt = r"Li$^+$"
-    Ncations = 1   # numero de Li+
-    runs_inds = range(6,16) # range(6,11)
+    Ncations = 1   # numero de Li+    
     mdp_prefix = "HQ"
     runs_prefix = "HQ"
+    runs_inds = range(16,26) # range(6,11)
     runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
     runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
     trajectory_format = ".xtc" # ".trr" or ".xtc"
@@ -63,6 +63,9 @@ for solvent, solvent_itp, solvent_id in zip(solvents, solvents_itp, solvents_id)
                 #method='manual')             
     print(f"ACF time: {time.time()-t0:.0f} s")
 
+    runs_inds = range(6,26) # range(6,11)
+    runs_suffix = [f".{t*1000:.0f}_ps" for t in runs_inds]
+    runs_suffix_gro = [f".{t:.0f}" for t in runs_inds]
 
     t0 = time.time()
     plot_ACF(path_MDrelax,
