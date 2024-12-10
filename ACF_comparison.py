@@ -60,17 +60,17 @@ paths=[]
 # paths.append("/home/santi/MD/MDRelax_results/LiTFSI_small-boxes/ACN/run_1ns/")
 
 
-names.append(r"DOL-Li$^+$ 0.1 M - charmm36")
-paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DOL_no-anion/")
+# names.append(r"DOL-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DOL_no-anion/")
 
-names.append(r"DME-Li$^+$ 0.1 M - charmm36")
-paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DME_no-anion/")
+# names.append(r"DME-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/DME_no-anion/")
 
-names.append(r"Diglyme-Li$^+$ 0.1 M - charmm36")
-paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/Diglyme_no-anion/")
+# names.append(r"Diglyme-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/Diglyme_no-anion/")
 
-names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
-paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
+# names.append(r"TEGDME-Li$^+$ 0.1 M - charmm36")
+# paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/TEGDME_no-anion/")
 
 names.append(r"ACN-Li$^+$ 0.1 M - charmm36")
 paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/ACN_no-anion/")
@@ -78,7 +78,7 @@ paths.append("/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/ACN_no-anion/")
 
 Vsquared_list = []
 tau_c_list = []
-cutoff_time = 400  # ps
+cutoff_time = 100  # ps
 skipdata = 1
 N_exp = 3  # Número de exponenciales en la suma
 fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
@@ -152,7 +152,7 @@ gamma = 0.17  # Sternhemmer factor
 # gamma = 0 # Sternhemmer factor
 Vsq = np.array(Vsquared_list)
 solvents = ["DOL", "DME", "Diglyme","TEGDME", "ACN"]
-tau_c = np.array([0.88, 1.5, 9,  72, 0.29])
+tau_c = np.array([0.71, 1.55, 7.9,  72, 0.29])
 e = 1.60217663 * 1e-19  # Coulomb
 hbar = 1.054571817 * 1e-34  # joule seconds
 ke = 8.9875517923 * 1e9  # Vm/C, Coulomb constant
