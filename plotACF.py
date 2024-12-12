@@ -5,7 +5,7 @@ from Functions import *
 
 
 
-path = "/home/santi/MD/MDRelax_results/Li-water/long/"
+path = "/home/santi/MD/MDRelax_results/CHARMM/Li_no-anion/ACN_no-anion/"
         
 
 for t in range(6,11):
